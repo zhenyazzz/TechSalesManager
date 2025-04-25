@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/8"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="org.com.techsalesmanagerclient.ClientController"
+      spacing="10" style="-fx-padding: 10;">
+
+    <Label text="Netty JSON Client" style="-fx-font-weight: bold;"/>
+    <TextArea fx:id="logArea" editable="false" prefHeight="200"/>
+    <HBox spacing="5">
+        <TextField fx:id="messageField" promptText="Введите JSON..." HBox.hgrow="ALWAYS"/>
+        <Button text="Отправить" onAction="#sendMessage"/>
+    </HBox>
+</VBox>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" style="-fx-background-color: #0d0023;" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.com.techsalesmanagerclient.controller.EmailVerificationController">
+    <children>
+        <Pane layoutY="93.0" prefHeight="307.0" prefWidth="600.0" style="-fx-background-color: ffffff;">
+            <children>
+                <Button fx:id="signUpSignUpButton" layoutX="252.0" layoutY="175.0" mnemonicParsing="false" prefHeight="39.0" prefWidth="97.0" style="-fx-background-color: #ffc455;" text="SignUp" textFill="WHITE">
+                    <font>
+                        <Font name="Century" size="19.0" />
+                    </font>
+                </Button>
+                <TextField fx:id="signUpNickname" layoutX="177.0" layoutY="101.0" prefHeight="53.0" prefWidth="240.0" promptText="6-Number Code">
+                    <font>
+                        <Font size="17.0" />
+                    </font>
+                </TextField>
+                <Text layoutX="128.0" layoutY="77.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Enter a code from your email list:" wrappingWidth="345.82421875">
+                    <font>
+                        <Font name="Century" size="22.0" />
+                    </font>
+                </Text>
+            </children>
+        </Pane>
+        <Button fx:id="backToSignUpButton" layoutX="14.0" layoutY="14.0" mnemonicParsing="false" prefHeight="39.0" prefWidth="120.0" style="-fx-background-color: #ffc455;" text="Back" textFill="WHITE">
+            <font>
+                <Font name="Century" size="19.0" />
+            </font>
+        </Button>
+        <Text fill="WHITE" layoutX="105.0" layoutY="69.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Verification" textAlignment="CENTER" wrappingWidth="389.82421875">
+            <font>
+                <Font name="Century" size="44.0" />
+            </font>
+        </Text>
+    </children>
+</Pane>
