@@ -10,6 +10,9 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class UserHandler implements MessageHandler {
     private final UserService userService;
+
+
+
     @Override
     public void handle(ChannelHandlerContext ctx, JsonMessage msg) {
         if ("login".equals(msg.getCommand())) {

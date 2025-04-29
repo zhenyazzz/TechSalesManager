@@ -9,6 +9,7 @@ import io.netty.handler.logging.LoggingHandler;
 import org.com.techsalesmanagerserver.server.handler.ServerHandler;
 import org.com.techsalesmanagerserver.server.handler.UserHandler;
 import org.com.techsalesmanagerserver.server.init.NettyServerInitializer;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,27 +32,19 @@ public class NettyServerConfig {
         return new NioEventLoopGroup(workerThreads);
     }
 
-    @Bean
-    public UserHandler userHandler() {
-        return new UserHandler();
-    }
-    @Bean
-    public ServerHandler serverHandler() {
-        return new ServerHandler();
-    }
-    @Bean
-    public NettyServerInitializer nettyServerInitializer() {
-        return new NettyServerInitializer(serverHandler());
-    }
+    @Autowired
+    private NettyServerInitializer nt;
+
 
     // Конфигурация Netty
     @Bean
     public ServerBootstrap serverBootstrap() {
+
         return new ServerBootstrap()
                 .group(bossGroup(), workerGroup())
                 .channel(NioServerSocketChannel.class)
                 .handler(new LoggingHandler(LogLevel.INFO))
-                .childHandler(new NettyServerInitializer())
+                .childHandler(nt)
                 .option(ChannelOption.SO_BACKLOG, 1000)
                 .childOption(ChannelOption.TCP_NODELAY, true);
     }

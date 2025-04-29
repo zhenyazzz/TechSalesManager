@@ -73,6 +73,7 @@ public class LogInController {
                 message.addData("username", nickname);
                 message.addData("password", password);
 
+
                 JsonMessage response = nettyClient.sendRequest(message);
 
 
@@ -89,7 +90,8 @@ public class LogInController {
 
 
             } catch (Exception e) {
-                throw new RuntimeException("Ошибка отправки сообщения");
+                System.out.println(e.getMessage());
+                //throw new RuntimeException("Ошибка отправки сообщения");
             }
         });
     }

@@ -3,6 +3,7 @@ module org.com.techsalesmanagerclient {
     requires javafx.fxml;
     requires javafx.web;
 
+
     requires org.controlsfx.controls;
     requires com.dlsc.formsfx;
     requires net.synedra.validatorfx;
@@ -17,6 +18,7 @@ module org.com.techsalesmanagerclient {
     requires static lombok;
     requires io.netty.common;
     requires io.netty.handler;
+    requires org.slf4j;
 
     opens org.com.techsalesmanagerclient to javafx.fxml;
     exports org.com.techsalesmanagerclient;

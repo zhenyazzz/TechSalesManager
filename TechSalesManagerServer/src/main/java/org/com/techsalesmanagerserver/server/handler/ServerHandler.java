@@ -2,13 +2,17 @@ package org.com.techsalesmanagerserver.server.handler;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.com.techsalesmanagerserver.server.init.JsonMessage;
 import org.springframework.stereotype.Component;
 
+@Component
 @RequiredArgsConstructor
 public class ServerHandler extends SimpleChannelInboundHandler<JsonMessage> {
     private final UserHandler userHandler;
+
+
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, JsonMessage msg) {

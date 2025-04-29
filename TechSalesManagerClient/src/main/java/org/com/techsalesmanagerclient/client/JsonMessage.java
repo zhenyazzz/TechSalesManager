@@ -12,4 +12,6 @@ public class JsonMessage {
     public void addData(String key, Object value) {
         data.put(key, value);
     }
+
+
 }
