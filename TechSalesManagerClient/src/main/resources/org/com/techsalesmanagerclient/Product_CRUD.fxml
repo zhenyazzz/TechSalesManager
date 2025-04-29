@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="org.com.techsalesmanagerclient.controller.ProductCrudController">
+
+    <top>
+        <Label text="Управление товарами"
+               BorderPane.alignment="CENTER">
+            <font>
+                <Font size="20"/>
+            </font>
+            <padding>
+                <Insets top="15" bottom="10" left="20" right="20"/>
+            </padding>
+        </Label>
+    </top>
+
+    <center>
+        <VBox spacing="10">
+            <padding>
+                <Insets top="10" bottom="10" left="20" right="20"/>
+            </padding>
+
+            <HBox spacing="10">
+                <TextField fx:id="productNameField" promptText="Название товара" HBox.hgrow="ALWAYS"/>
+                <TextField fx:id="productCategoryField" promptText="Категория" HBox.hgrow="ALWAYS"/>
+                <TextField fx:id="productPriceField" promptText="Цена" HBox.hgrow="ALWAYS"/>
+<!--                <Button text="Создать" fx:id="createButton" onAction="#handleCreate"/>-->
+<!--                <Button text="Обновить" fx:id="updateButton" onAction="#handleUpdate"/>-->
+<!--                <Button text="Удалить" fx:id="deleteButton" onAction="#handleDelete"/>-->
+            </HBox>
+
+            <TableView fx:id="productTable" prefHeight="300">
+                <columns>
+                    <TableColumn text="ID" prefWidth="50"/>
+                    <TableColumn text="Название товара" prefWidth="200"/>
+                    <TableColumn text="Категория" prefWidth="150"/>
+                    <TableColumn text="Цена" prefWidth="100"/>
+                </columns>
+            </TableView>
+        </VBox>
+    </center>
+
+    <bottom>
+        <HBox spacing="10" alignment="CENTER_RIGHT">
+            <padding>
+                <Insets top="10" bottom="15" right="20" left="20"/>
+            </padding>
+<!--            <Button text="Выйти" onAction="#handleLogout"/>-->
+        </HBox>
+    </bottom>
+</BorderPane>

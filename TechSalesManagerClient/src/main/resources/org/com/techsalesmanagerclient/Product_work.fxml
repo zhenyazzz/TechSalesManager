@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="org.com.techsalesmanagerclient.controller.ProductWorkController">
+
+    <top>
+        <Label text="Просмотр и поиск товаров"
+               BorderPane.alignment="CENTER">
+            <font>
+                <Font size="20"/>
+            </font>
+            <padding>
+                <Insets top="15" bottom="10" left="20" right="20"/>
+            </padding>
+        </Label>
+    </top>
+
+    <center>
+        <VBox spacing="10">
+            <padding>
+                <Insets top="10" bottom="10" left="20" right="20"/>
+            </padding>
+
+            <HBox spacing="10">
+                <TextField fx:id="searchByIdField" promptText="Поиск по ID" HBox.hgrow="ALWAYS"/>
+<!--                <Button text="Найти" onAction="#handleSearchById"/>-->
+
+                <TextField fx:id="filterByIdField" promptText="Фильтр по ID" HBox.hgrow="ALWAYS"/>
+<!--                <Button text="Фильтровать" onAction="#handleFilterById"/>-->
+
+<!--                <Button text="Сортировать по цене (возр.)" onAction="#handleSortByPriceAsc"/>-->
+<!--                <Button text="Сортировать по цене (убыв.)" onAction="#handleSortByPriceDesc"/>-->
+            </HBox>
+
+            <TableView fx:id="productTable" prefHeight="300">
+                <columns>
+                    <TableColumn fx:id="idColumn" text="ID" prefWidth="50"/>
+                    <TableColumn fx:id="nameColumn" text="Название" prefWidth="200"/>
+                    <TableColumn fx:id="categoryColumn" text="Категория" prefWidth="150"/>
+                    <TableColumn fx:id="priceColumn" text="Цена" prefWidth="100"/>
+                </columns>
+            </TableView>
+        </VBox>
+    </center>
+
+    <bottom>
+        <HBox spacing="10" alignment="CENTER_RIGHT">
+            <padding>
+                <Insets top="10" bottom="15" right="20" left="20"/>
+            </padding>
+<!--            <Button text="Назад" onAction="#handleBack"/>-->
+        </HBox>
+    </bottom>
+</BorderPane>
