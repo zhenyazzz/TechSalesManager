@@ -27,8 +27,7 @@ public class EmailVerificationController{
     @FXML
     private Button signUpSignUpButton;
 
-    WorkWithScenes workWithScenes = new WorkWithScenes();
-
+    private final WorkWithScenes workWithScenes = new WorkWithScenes();
     @FXML
     void initialize() {
         backToSignUpButton.setOnAction(action -> workWithScenes.loadScene("signUpWindow.fxml", backToSignUpButton));
@@ -36,9 +35,8 @@ public class EmailVerificationController{
         System.out.println(verificationNumber);
         signUpSignUpButton.setOnAction(action -> {
             System.out.println(verificationNumber);
-            System.out.println(signUpNickname.getText().equals(verificationNumber));
-            if (signUpNickname.getText().equals(verificationNumber)) {
-                workWithScenes.loadScene("hello-view.fxml", signUpSignUpButton);
+            if (Integer.parseInt(signUpNickname.getText()) == verificationNumber) {
+                workWithScenes.loadScene("/org/com/techsalesmanagerclient/logIn.fxml", signUpSignUpButton);
             }
         });
     }

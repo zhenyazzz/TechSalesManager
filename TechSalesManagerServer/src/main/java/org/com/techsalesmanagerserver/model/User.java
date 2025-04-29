@@ -17,11 +17,16 @@ public class User {
     @GeneratedValue
     private Long id;
 
+    private String name;
+    private String surname;
     private String username;
+    private String email;
     private String password;
 
     @Enumerated(EnumType.STRING)
-    private Role role;
+    @Column(columnDefinition = "varchar(255) default 'CUSTOMER'")
+    @Builder.Default
+    private Role role = Role.CUSTOMER;
 
     @OneToMany(mappedBy = "user")
     private List<Order> orders;

@@ -1,8 +1,10 @@
 package org.com.techsalesmanagerclient.controller;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.StringJoiner;
+import java.util.concurrent.TimeoutException;
 
 
 import javafx.fxml.FXML;
@@ -10,6 +12,9 @@ import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.text.Text;
+import org.com.techsalesmanagerclient.client.JsonMessage;
+import org.com.techsalesmanagerclient.client.NettyClient;
+import org.jetbrains.annotations.NotNull;
 
 
 public class SignUpController implements SignUpInformation {
@@ -56,8 +61,11 @@ public class SignUpController implements SignUpInformation {
 
 
     private final WorkWithScenes workWithScenes = new WorkWithScenes();
-
+    private final NettyClient nettyClient  = NettyClient.getInstance();
     private final LinkedList<String> listOfEmptyFields = new LinkedList<>();
+
+    public SignUpController() throws InterruptedException {
+    }
 
 
     @FXML
@@ -69,14 +77,38 @@ public class SignUpController implements SignUpInformation {
         signUpSignUpButton.setOnAction(eventForSignUpButtonInSignUpWindow -> {
             setToDefaultFields(signUpName, signUpNickname, signUpSurname, signUpPassword, signUpEmail);
             setToDefaultTextErrorsMessages(nameErrorMessage, surnameErrorMessage, nicknameErrorMessage, passwordErrorMessage, globalErrorsText, emailErrorMessage);
-            String name = signUpName.getText();
-            String surname = signUpSurname.getText();
-            String nickname = signUpNickname.getText();
-            String password = signUpPassword.getText();
-            String email = signUpEmail.getText();
-            System.out.println("Отправка данных на сервер ");
+            JsonMessage request = getJsonMessage();
 
+            System.out.println("Отправка данных на сервер ");
+            try {
+                JsonMessage response = nettyClient.sendRequest(request);
+                if (response.getCommand().equals("success")){
+                    workWithScenes.loadScene("/org/com/techsalesmanagerclient/emailVerification.fxml", signUpLogInButton);
+                }
+
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            } catch (TimeoutException e) {
+                throw new RuntimeException(e);
+            }
         });
+    }
+
+    @NotNull
+    private JsonMessage getJsonMessage() {
+        String name = signUpName.getText();
+        String surname = signUpSurname.getText();
+        String nickname = signUpNickname.getText();
+        String password = signUpPassword.getText();
+        String email = signUpEmail.getText();
+        JsonMessage request = new JsonMessage();
+        request.setCommand("register");
+        request.addData("name",name);
+        request.addData("surname",surname);
+        request.addData("username", nickname);
+        request.addData("email",email);
+        request.addData("password", password);
+        return request;
     }
 
     private boolean checkAllParameters(String name, String surname, String nickname, String password, String email) {

@@ -43,7 +43,7 @@ public class LogInController {
 
     @FXML
     private Text passwordErrorMessage;
-    private final NettyClient nettyClient = new NettyClient();
+    private final NettyClient nettyClient = NettyClient.getInstance();
     private final WorkWithScenes workWithScenes = new WorkWithScenes();
 
     public LogInController() throws InterruptedException {
