@@ -2,6 +2,8 @@ package org.com.techsalesmanagerserver.controller;
 
 import io.netty.channel.ChannelHandlerContext;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.Logger;
 import org.com.techsalesmanagerserver.model.User;
 import org.com.techsalesmanagerserver.server.init.JsonMessage;
 import org.com.techsalesmanagerserver.service.UserService;
@@ -10,6 +12,7 @@ import org.springframework.stereotype.Component;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class AuthController implements Controller{
@@ -20,12 +23,16 @@ public class AuthController implements Controller{
         String username = (String) data.get("username");
         String password = (String) data.get("password");
         System.out.println("логин происходит");
-        //JsonMessage response = userService.authenticate(username, password);
-        JsonMessage response = new JsonMessage();
-        response.setCommand("success");
+        System.out.println(username);
+        System.out.println(password);
+        JsonMessage response = userService.authenticate(username, password);
+
+
+       // JsonMessage response = new JsonMessage();
+       /* response.setCommand("success");
         response.setData(new HashMap<String,Object>() {{
             put("role", "user");
-        }});
+        }});*/
 
         ctx.writeAndFlush(response);
     }
@@ -38,7 +45,6 @@ public class AuthController implements Controller{
         user.setUsername(data.get("username").toString());
         user.setEmail(data.get("email").toString());
         user.setPassword(data.get("password").toString());
-
         JsonMessage response = userService.register(user);
         ctx.writeAndFlush(response);
     }

@@ -1,10 +1,12 @@
 package org.com.techsalesmanagerserver.service;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.com.techsalesmanagerserver.model.User;
 import org.com.techsalesmanagerserver.repository.UserRepository;
 import org.com.techsalesmanagerserver.server.init.JsonMessage;
+import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,6 +17,57 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
+
+    public JsonMessage findByUsernameAndPassword(String username, String password) {
+        log.info("Attempting to find user by username: {}", username);
+
+        // Ищем пользователя по имени
+        Optional<User> userOptional = userRepository.findByUsername(username);
+        log.info("User Found: {}", userOptional.isPresent());
+        JsonMessage response = new JsonMessage();
+
+        if (userOptional.isPresent()) {
+            User user = new User();
+            user.setUsername(userOptional.get().getUsername());
+            user.setPassword(userOptional.get().getPassword());
+            user.setRole(userOptional.get().getRole());
+            user.setEmail(userOptional.get().getEmail());
+            user.setName(userOptional.get().getName());
+            user.setSurname(userOptional.get().getSurname());
+            log.info("Attempting check the password: {}", password);
+            // Проверяем совпадение паролей (рекомендуется использовать BCrypt)
+            if (passwordMatches(user.getPassword(), password)) {
+
+                response.setCommand("success");
+                response.getData().put("user", user);
+                log.info("User found and password matches");
+            } else {
+
+                response.setCommand("error");
+                response.getData().put("message", "Invalid password");
+                log.warn("Password mismatch for user: {}", username);
+            }
+        } else {
+            response.setCommand("error");
+            response.getData().put("message", "User not found");
+            log.warn("User not found with username: {}", username);
+        }
+
+        return response;
+    }
+
+    // Метод для проверки пароля (адаптируйте под вашу систему хеширования)
+    private boolean passwordMatches(String storedHash, String rawPassword) {
+
+        log.info("Attempting to check the password: {}  {}", rawPassword,storedHash);
+
+        if (rawPassword.equals(storedHash)) {
+            return true;
+        }
+        else return false;
+        //потом сменить
+        //return BCrypt.checkpw(rawPassword, storedHash);
+    }
 
     public JsonMessage findAll() {
         log.info("Fetching all users");
@@ -64,6 +117,7 @@ public class UserService {
         }
     }
 
+    @Transactional
     public JsonMessage register(User user) {
         log.info("Registering user: {}", user);
 
@@ -76,14 +130,19 @@ public class UserService {
     }
 
     public JsonMessage authenticate(String username, String password) {
-        log.info("Authenticating user: {}", username);
-        Optional<User> user = userRepository.findByUsername(username);
 
-        if (user.isPresent() && user.get().getPassword().equals(password)) {
-            return createSuccessResponse("Authentication successful", user.get());
+        log.info("Attempting authentication for user: {}", username);
+
+        JsonMessage authResponse = findByUsernameAndPassword(username, password);
+
+        if ("success".equals(authResponse.getCommand())) {
+            log.info("Authentication successful for user: {}", username);
+
+            return authResponse; // Уже содержит user и success-статус
         }
 
-        return createErrorResponse("Invalid username or password");
+        log.warn("Authentication failed for user: {}", username);
+        return createErrorResponse("Invalid credentials"); // Используем существующий метод
     }
 
     private JsonMessage createSuccessResponse(String message, User user) {

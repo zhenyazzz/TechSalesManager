@@ -4,6 +4,7 @@ package org.com.techsalesmanagerclient.controller;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Map;
 import java.util.Random;
 import java.util.ResourceBundle;
 
@@ -77,15 +78,17 @@ public class LogInController {
                 JsonMessage response = nettyClient.sendRequest(message);
 
 
-                if(response.getData().get("role").equals("admin")) {
+
+                if(((String)((Map<?, ?>) response.getData().get("user")).get("role")).equals("ADMIN")) {
                     System.out.println("admin");
                     //workWithScenes.loadScene("/org/com/techsalesmanagerclient/singUp.fxml", signUpButton);
-                } else if (response.getData().get("role").equals("user")) {
+                } else if (((String)((Map<?, ?>) response.getData().get("user")).get("role")).equals("CUSTOMER")) {
                     System.out.println("user");
                     //workWithScenes.loadScene("/org/com/techsalesmanagerclient/singUp.fxml", signUpButton);
                 }
                 else {
                     System.out.println(response.getCommand());
+
                 }
 
 
