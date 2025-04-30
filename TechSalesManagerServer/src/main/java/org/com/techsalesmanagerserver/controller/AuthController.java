@@ -27,13 +27,6 @@ public class AuthController implements Controller{
         System.out.println(password);
         JsonMessage response = userService.authenticate(username, password);
 
-
-       // JsonMessage response = new JsonMessage();
-       /* response.setCommand("success");
-        response.setData(new HashMap<String,Object>() {{
-            put("role", "user");
-        }});*/
-
         ctx.writeAndFlush(response);
     }
 

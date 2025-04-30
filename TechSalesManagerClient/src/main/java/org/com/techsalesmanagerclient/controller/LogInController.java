@@ -81,10 +81,10 @@ public class LogInController {
 
                 if(((String)((Map<?, ?>) response.getData().get("user")).get("role")).equals("ADMIN")) {
                     System.out.println("admin");
-                    //workWithScenes.loadScene("/org/com/techsalesmanagerclient/singUp.fxml", signUpButton);
+                    workWithScenes.loadScene("/org/com/techsalesmanagerclient/Admin_Menu.fxml", signUpButton);
                 } else if (((String)((Map<?, ?>) response.getData().get("user")).get("role")).equals("CUSTOMER")) {
                     System.out.println("user");
-                    //workWithScenes.loadScene("/org/com/techsalesmanagerclient/singUp.fxml", signUpButton);
+                    workWithScenes.loadScene("/org/com/techsalesmanagerclient/User_Menu.fxml", signUpButton);
                 }
                 else {
                     System.out.println(response.getCommand());

@@ -20,6 +20,7 @@ module org.com.techsalesmanagerclient {
     requires io.netty.handler;
     requires org.slf4j;
     requires annotations;
+    requires java.desktop;
 
     opens org.com.techsalesmanagerclient to javafx.fxml;
     exports org.com.techsalesmanagerclient;
