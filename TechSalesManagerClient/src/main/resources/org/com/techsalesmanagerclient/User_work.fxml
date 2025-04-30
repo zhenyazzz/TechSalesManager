@@ -1,22 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="org.com.techsalesmanagerclient.controller.UserWorkController">
+<BorderPane xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.com.techsalesmanagerclient.controller.UserWorkController">
 
     <top>
-        <Label text="Управление пользователями"
-               BorderPane.alignment="CENTER">
+        <Label text="Управление пользователями" BorderPane.alignment="CENTER">
             <font>
-                <Font size="20"/>
+                <Font size="20" />
             </font>
             <padding>
-                <Insets top="15" bottom="10" left="20" right="20"/>
+                <Insets bottom="10" left="20" right="20" top="15" />
             </padding>
         </Label>
     </top>
@@ -25,36 +29,38 @@
         <VBox spacing="10">
             <Label text="Работа с пользователями">
                 <font>
-                    <Font size="20"/>
+                    <Font size="20" />
                 </font>
             </Label>
 
             <HBox spacing="10">
-                <TextField fx:id="searchField" promptText="Поиск по имени или ID"/>
-<!--                <Button text="Поиск" onAction="#handleSearch"/>-->
-                <ComboBox fx:id="filterComboBox" promptText="Фильтр по роли"/>
-                <ComboBox fx:id="sortComboBox" promptText="Сортировка"/>
-<!--                <Button text="Применить" onAction="#handleFilterAndSort"/>-->
+                <TextField fx:id="searchField" promptText="Поиск по имени или ID" />
+                <Button onAction="#handleSearch" text="Поиск" />
+                <ComboBox fx:id="filterComboBox" promptText="Фильтр по роли" />
+                <ComboBox fx:id="sortComboBox" promptText="Сортировка" />
+                <Button onAction="#handleFilterAndSort" text="Применить" />
             </HBox>
         </VBox>
     </center>
 
     <bottom>
         <VBox spacing="10">
-            <HBox spacing="10" alignment="CENTER_RIGHT">
+            <HBox alignment="CENTER_RIGHT" spacing="10">
                 <padding>
-                    <Insets top="10" bottom="15" right="20" left="20"/>
+                    <Insets bottom="15" left="20" right="20" top="10" />
                 </padding>
-<!--                <Button text="Выйти" onAction="#handleLogout"/>-->
+            <children>
+                   <Button fx:id="ExitButton" onAction="#handleExit" text="Выйти" />
+            </children>
             </HBox>
 
             <!-- Новый TableView для отображения списка пользователей -->
             <TableView fx:id="userTable" prefHeight="200">
                 <columns>
-                    <TableColumn fx:id="idColumn" text="ID" prefWidth="100"/>
-                    <TableColumn fx:id="nameColumn" text="Имя" prefWidth="200"/>
-                    <TableColumn fx:id="roleColumn" text="Роль" prefWidth="150"/>
-                    <TableColumn fx:id="emailColumn" text="Email" prefWidth="250"/>
+                    <TableColumn fx:id="idColumn" prefWidth="100" text="ID" />
+                    <TableColumn fx:id="nameColumn" prefWidth="200" text="Имя" />
+                    <TableColumn fx:id="roleColumn" prefWidth="150" text="Роль" />
+                    <TableColumn fx:id="emailColumn" prefWidth="250" text="Email" />
                 </columns>
             </TableView>
         </VBox>

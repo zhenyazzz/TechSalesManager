@@ -20,17 +20,17 @@ public class UserWorkMenuController {
     void initialize() {
         // Переход в каталог
        UserCrudButton.setOnAction(event -> {
-            workWithScenes.loadScene("org/com/techsalesmanagerclient/User_CRUD.fxml",UserCrudButton);
+            workWithScenes.loadScene("/org/com/techsalesmanagerclient/User_CRUD.fxml",UserCrudButton);
         });
 
         // Переход в меню работы с товарами
         UserWorkButton.setOnAction(event -> {
-            workWithScenes.loadScene( "org/com/techsalesmanagerclient/Product_CRUD.fxml",UserWorkButton);
+            workWithScenes.loadScene( "/org/com/techsalesmanagerclient/User_work.fxml",UserWorkButton);
         });
 
         // Выход из системы
         ExitButton.setOnAction(event -> {
-            workWithScenes.loadScene( "org/com/techsalesmanagerclient/User_Work_Menu.fxml",ExitButton);
+            workWithScenes.loadScene( "/org/com/techsalesmanagerclient/logIn.fxml",ExitButton);
         });
     }
 }
