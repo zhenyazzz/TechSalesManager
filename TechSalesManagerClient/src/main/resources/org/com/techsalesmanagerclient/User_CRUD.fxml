@@ -34,7 +34,7 @@
             <TextField fx:id="idField" editable="false" promptText="ID (автогенерация)" />
             <TextField fx:id="nameField" promptText="Имя" />
             <TextField fx:id="surnameField" promptText="Фамилия" />
-            <TextField fx:id="usernameFieldSide" promptText="Имя пользователя" />
+            <TextField fx:id="usernameField" promptText="Имя пользователя" />
             <TextField fx:id="emailField" promptText="Email" />
             <TextField fx:id="passwordField" promptText="Пароль" />
             <ComboBox fx:id="roleComboBox">
@@ -49,7 +49,7 @@
             </padding>
 
             <HBox spacing="10">
-            <Button id="SearchButton" fx:id="SearchButton" mnemonicParsing="false" text="Поиск" />
+            <Button id="SearchButton" fx:id="SearchButton" onAction="#handleSearch" mnemonicParsing="false" text="Поиск" />
                 <Button fx:id="createButton" onAction="#handleCreate" text="Создать" />
                 <Button fx:id="updateButton" onAction="#handleUpdate" text="Обновить" />
                 <Button fx:id="deleteButton" onAction="#handleDelete" text="Удалить" />

@@ -81,7 +81,9 @@ public class UserService {
     public List<User> findAll_List() {
         log.info("Fetching all users");
         List<User> users = userRepository.findAll();
-
+        for(User user : users) {
+            user.setOrders(null);
+        }
         return users;
     }
 

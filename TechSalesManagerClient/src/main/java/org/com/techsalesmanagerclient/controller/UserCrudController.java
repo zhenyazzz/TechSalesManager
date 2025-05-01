@@ -1,5 +1,6 @@
 package org.com.techsalesmanagerclient.controller;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
@@ -12,17 +13,18 @@ import javafx.scene.control.cell.MapValueFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.com.techsalesmanagerclient.client.JsonMessage;
 import org.com.techsalesmanagerclient.client.NettyClient;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 @Slf4j
 public class UserCrudController {
+
+    @FXML
+    public Button SearchButton;
 
     @FXML
     private Button ExitButton;
@@ -38,9 +40,6 @@ public class UserCrudController {
 
     @FXML
     private TableView<Map<String, Object>> userTable;
-
-    @FXML
-    private TextField usernameField;
 
     @FXML
     private ComboBox<String> roleComboBox;
@@ -76,7 +75,7 @@ public class UserCrudController {
     private TextField surnameField;
 
     @FXML
-    private TextField usernameFieldSide;
+    private TextField usernameField;
 
     @FXML
     private TextField emailField;
@@ -145,30 +144,52 @@ public class UserCrudController {
             return new SimpleObjectProperty<>(value != null ? value.toString() : null);
         });
 
-        JsonMessage message = new JsonMessage();
-        message.setCommand("get_users");
-        message.addData("command","get_users");
+        JsonMessage request = new JsonMessage();
+        request.setCommand("get_users");
+        request.addData("command","get_users");
 
+        JsonMessage response = nettyClient.sendRequest(request);
+        log.info(response.toString());
+        updateTableView(extractUsersFromJsonMessage(response));
 
-
-       // JsonMessage response = nettyClient.sendRequest(message);
+      /* // JsonMessage response = nettyClient.sendRequest(message);
         List<Map<String, Object>> response = nettyClient.sendListRequest(message);
         System.out.println(response.toString());
-        updateTableView(response);
-        userTable.setItems(users);
+        updateTableView(response);*/
+       
 
 
 
 
     }
 
+    @FXML
+    void handleSearch(ActionEvent event) throws IOException, TimeoutException {
+        JsonMessage request = new JsonMessage();
+        request.setCommand("get_users");
+        request.addData("command","get_users");
 
 
+
+        // JsonMessage response = nettyClient.sendRequest(message);
+        //List<Map<String, Object>> response = nettyClient.sendListRequest(message);
+        JsonMessage response = nettyClient.sendRequest(request);
+
+        updateTableView(extractUsersFromJsonMessage(response));
+        userTable.setItems(users);
+        
+        
+    }
 
 
     @FXML
-    void handleCreate(ActionEvent event) {
-
+    void handleCreate(ActionEvent event) throws IOException, TimeoutException {
+        JsonMessage request= new JsonMessage();
+        request.setCommand("create_user");
+        request.addData("user",getJsonMessage());
+        JsonMessage response = nettyClient.sendRequest(request);
+        
+        updateTableView(users);
     }
 
     @FXML
@@ -195,6 +216,7 @@ public class UserCrudController {
             users.addAll(normalizedList);
             log.debug("TableView updated with: {}", normalizedList);
         });
+        userTable.setItems(users);
     }
 
     private Map<String, Object> normalizeMap(Map<String, Object> input) {
@@ -209,5 +231,68 @@ public class UserCrudController {
             log.warn("Found extra keys in response: {}", extraKeys);
         }
         return normalized;
+    }
+
+    @NotNull
+    private JsonMessage getJsonMessage() {
+        String name = nameField.getText();
+        String surname = surnameField.getText();
+        String username = usernameField.getText();
+        String password = passwordField.getText();
+        String email = emailField.getText();
+        String role = roleComboBox.getValue();
+        JsonMessage request = new JsonMessage();
+        request.setCommand("register");
+        request.addData("name",name);
+        request.addData("surname",surname);
+        request.addData("username", username);
+        request.addData("email",email);
+        request.addData("password", password);
+        request.addData("role", role);
+        return request;
+    }
+
+    public List<Map<String, Object>> extractUsersFromJsonMessage(JsonMessage message) {
+        if (!"users".equals(message.getCommand())) {
+            log.error("Invalid command: expected 'users', got '{}'", message.getCommand());
+            throw new IllegalArgumentException("Invalid command: " + message.getCommand());
+        }
+
+        Object usersData = message.getData().get("users");
+        if (usersData == null) {
+            log.warn("No 'users' key found in message data: {}", message);
+            return new ArrayList<>();
+        }
+
+        try {
+            if (usersData instanceof String) {
+                // Если данные пришли как JSON-строка
+                List<Map<String, Object>> userList = mapper.readValue(
+                        (String) usersData,
+                        mapper.getTypeFactory().constructCollectionType(List.class, Map.class)
+                );
+                log.info("Extracted {} users from JSON string", userList.size());
+                return userList;
+            } else if (usersData instanceof List) {
+                // Если данные уже десериализованы как List<Map>
+                List<Map<String, Object>> userList = mapper.convertValue(
+                        usersData,
+                        new TypeReference<List<Map<String, Object>>>() {}
+                );
+                log.info("Extracted {} users from JsonMessage", userList.size());
+                return userList;
+            } else {
+                // Если данные пришли как объект (Map)
+                log.warn("Unexpected data format for 'users': expected List or String, got {}", usersData.getClass());
+                Map<String, Object> singleUser = mapper.convertValue(usersData, new TypeReference<Map<String, Object>>() {});
+                List<Map<String, Object>> userList = new ArrayList<>();
+                userList.add(singleUser);
+                log.info("Converted single user object to list: {}", userList);
+                return userList;
+            }
+        } catch (Exception e) {
+            log.error("Failed to parse users from JsonMessage: {}", e.getMessage(), e);
+            throw new IllegalArgumentException("Failed to parse users: " + e.getMessage(), e);
+        }
     }
 }

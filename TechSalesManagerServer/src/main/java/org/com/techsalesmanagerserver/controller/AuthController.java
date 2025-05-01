@@ -1,5 +1,6 @@
 package org.com.techsalesmanagerserver.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.channel.ChannelHandlerContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +15,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -33,26 +35,35 @@ public class AuthController implements Controller{
         ctx.writeAndFlush(response);
     }
 
+    @Command("register")
+    public void handleRegister(ChannelHandlerContext ctx, Map<String, Object> data) {
+        User user = new User();
+        user.setName(data.get("name").toString());
+        user.setSurname(data.get("surname").toString());
+        user.setUsername(data.get("username").toString());
+        user.setEmail(data.get("email").toString());
+        user.setPassword(data.get("password").toString());
+        JsonMessage response = userService.register(user);
+        ctx.writeAndFlush(response);
+    }
 
     @Command("get_users")
-    public void handleSearch(ChannelHandlerContext ctx, Map<String, Object> data) {
+    public void handleGet(ChannelHandlerContext ctx, Map<String, Object> data) {
 
         JsonMessage cmd=new JsonMessage();
         cmd.setCommand(data.get("command").toString());
         log.debug("Received command: {}", cmd);
 
 
-        // Начало потока
+        /*// Начало потока
         JsonMessage startResponse = new JsonMessage();
         startResponse.setCommand("start_users");
-        ctx.writeAndFlush(startResponse);
+        ctx.writeAndFlush(startResponse);*/
 
-        // Список пользователей (замените на данные из БД)
-        Long a = 1L;
         List<User> users = userService.findAll_List();
 
 
-        // Отправка каждого пользователя
+        /*// Отправка каждого пользователя
         for (User user : users) {
             user.setOrders(null);
             JsonMessage userResponse = new JsonMessage();
@@ -64,20 +75,29 @@ public class AuthController implements Controller{
         // Конец потока
         JsonMessage endResponse = new JsonMessage();
         endResponse.setCommand("end_users");
-        ctx.writeAndFlush(endResponse);
+        ctx.writeAndFlush(endResponse);*/
+
+
+        // Создание одного JsonMessage со списком пользователей
+        JsonMessage response = new JsonMessage();
+        response.setCommand("users");
+        response.getData().put("users", users);
+        log.debug("Sending response: {}", response);
+        ctx.writeAndFlush(response);
 
     }
 
-    @Command("register")
-    public void handleRegister(ChannelHandlerContext ctx, Map<String, Object> data) {
+    @Command("create_user")
+    public void handleCreate(ChannelHandlerContext ctx, Map<String, Object> data) {
+        log.debug("Received command: {}", data);
         User user = new User();
         user.setName(data.get("name").toString());
         user.setSurname(data.get("surname").toString());
         user.setUsername(data.get("username").toString());
         user.setEmail(data.get("email").toString());
         user.setPassword(data.get("password").toString());
-        JsonMessage response = userService.register(user);
-        ctx.writeAndFlush(response);
+        userService.save(user);
+        log.info("user saved");
     }
 
 
