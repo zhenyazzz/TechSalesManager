@@ -144,6 +144,15 @@ public class UserCrudController {
             return new SimpleObjectProperty<>(value != null ? value.toString() : null);
         });
 
+        // Добавляем слушатель для выбора записи в TableView
+        userTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+            if (newSelection != null) {
+                populateFields(newSelection);
+            } else {
+                clearInputFields();
+            }
+        });
+
         JsonMessage request = new JsonMessage();
         request.setCommand("get_users");
         request.addData("command","get_users");
@@ -184,17 +193,81 @@ public class UserCrudController {
 
     @FXML
     void handleCreate(ActionEvent event) throws IOException, TimeoutException {
-        JsonMessage request= new JsonMessage();
+
+        String name = nameField.getText();
+        String surname = surnameField.getText();
+        String username = usernameField.getText();
+        String password = passwordField.getText();
+        String email = emailField.getText();
+        String role = roleComboBox.getValue();
+        JsonMessage request = new JsonMessage();
         request.setCommand("create_user");
-        request.addData("user",getJsonMessage());
+        request.addData("name",name);
+        request.addData("surname",surname);
+        request.addData("username", username);
+        request.addData("email",email);
+        request.addData("password", password);
+        request.addData("role", role);
         JsonMessage response = nettyClient.sendRequest(request);
-        
-        updateTableView(users);
+        log.info(response.toString());
+        workWithScenes.loadScene("/org/com/techsalesmanagerclient/User_CRUD.fxml",createButton);
+        //handleSearch(event);
     }
 
     @FXML
     void handleDelete(ActionEvent event) {
+        try {
+            // Получаем ID из поля ввода (заполняется при выборе записи в TableView)
+            String idText = idField.getText();
+            if (idText == null || idText.isEmpty()) {
+                Platform.runLater(() -> showAlert("Warning", "Пожалуйста, выберите пользователя для удаления"));
+                return;
+            }
 
+            int userId;
+            try {
+                userId = Integer.parseInt(idText);
+            } catch (NumberFormatException e) {
+                log.error("Invalid ID format: {}", idText);
+                Platform.runLater(() -> showAlert("Error", "Неверный формат ID: " + idText));
+                return;
+            }
+
+            // Создаём запрос на удаление
+            JsonMessage request = new JsonMessage();
+            request.setCommand("delete_user");
+            request.addData("id", userId);
+            log.debug("Sending delete request: {}", request);
+
+            // Отправляем запрос на сервер
+            JsonMessage response = nettyClient.sendRequest(request);
+            log.debug("Received response: {}", response);
+
+            // Обрабатываем ответ от сервера
+            if ("success".equals(response.getCommand())) {
+
+
+                // Удаляем из TableView
+                Platform.runLater(() -> {
+                    users.removeIf(user -> {
+                        Object id = user.get("id");
+                        return id != null && id.toString().equals(String.valueOf(userId));
+                    });
+                    log.info("Removed user with ID {} from TableView", userId);
+                    clearInputFields();
+                });
+            } else if ("error".equals(response.getCommand())) {
+                String reason = response.getData().toString();
+                log.error("Server error: {}", reason);
+                Platform.runLater(() -> showAlert("Error", "Ошибка сервера: " + reason));
+            } else {
+                log.error("Unexpected response command: {}", response.getCommand());
+                Platform.runLater(() -> showAlert("Error", "Неожиданный ответ от сервера: " + response.getCommand()));
+            }
+        } catch (Exception e) {
+            log.error("Failed to delete user: {}", e.getMessage(), e);
+            Platform.runLater(() -> showAlert("Error", "Не удалось удалить пользователя: " + e.getMessage()));
+        }
     }
 
     @FXML
@@ -242,7 +315,7 @@ public class UserCrudController {
         String email = emailField.getText();
         String role = roleComboBox.getValue();
         JsonMessage request = new JsonMessage();
-        request.setCommand("register");
+        request.setCommand("create_user");
         request.addData("name",name);
         request.addData("surname",surname);
         request.addData("username", username);
@@ -294,5 +367,35 @@ public class UserCrudController {
             log.error("Failed to parse users from JsonMessage: {}", e.getMessage(), e);
             throw new IllegalArgumentException("Failed to parse users: " + e.getMessage(), e);
         }
+    }
+
+    private void populateFields(Map<String, Object> user) {
+        idField.setText(user.get("id") != null ? user.get("id").toString() : "");
+        nameField.setText(user.get("name") != null ? user.get("name").toString() : "");
+        surnameField.setText(user.get("surname") != null ? user.get("surname").toString() : "");
+        usernameField.setText(user.get("username") != null ? user.get("username").toString() : "");
+        emailField.setText(user.get("email") != null ? user.get("email").toString() : "");
+        passwordField.setText(user.get("password") != null ? user.get("password").toString() : "");
+        roleComboBox.setValue(user.get("role") != null ? user.get("role").toString() : null);
+        log.info("Populated fields with user data: {}", user);
+    }
+
+    private void clearInputFields() {
+        idField.clear();
+        nameField.clear();
+        surnameField.clear();
+        usernameField.clear();
+        emailField.clear();
+        passwordField.clear();
+        roleComboBox.setValue(null);
+    }
+
+    private void showAlert(String title, String content) {
+        log.error("Showing alert: {} - {}", title, content);
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(content);
+        alert.showAndWait();
     }
 }

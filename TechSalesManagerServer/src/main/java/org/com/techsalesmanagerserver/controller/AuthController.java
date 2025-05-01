@@ -38,7 +38,7 @@ public class AuthController implements Controller{
     @Command("register")
     public void handleRegister(ChannelHandlerContext ctx, Map<String, Object> data) {
         User user = new User();
-        user.setName(data.get("name").toString());
+        user.setName(data.toString());
         user.setSurname(data.get("surname").toString());
         user.setUsername(data.get("username").toString());
         user.setEmail(data.get("email").toString());
@@ -89,16 +89,38 @@ public class AuthController implements Controller{
 
     @Command("create_user")
     public void handleCreate(ChannelHandlerContext ctx, Map<String, Object> data) {
-        log.debug("Received command: {}", data);
+
+        log.info("Received command: {}", data);
+
         User user = new User();
-        user.setName(data.get("name").toString());
-        user.setSurname(data.get("surname").toString());
-        user.setUsername(data.get("username").toString());
-        user.setEmail(data.get("email").toString());
-        user.setPassword(data.get("password").toString());
+        String name = data.get("name").toString();
+        String surname = data.get("surname").toString();
+        String username = (String) data.get("username");
+        String password = (String) data.get("password");
+        String email = (String) data.get("email");
+        String role = (String) data.get("role");
+
+        user.setName(name);
+        user.setSurname(surname);
+        user.setUsername(username);
+        user.setEmail(email);
+        user.setPassword(password);
+        user.setRole(Role.valueOf(role));
+        user.setOrders(null);
         userService.save(user);
+        JsonMessage response = new JsonMessage();
+        response.setCommand("success");
+        response.getData().put("user",user);
+        ctx.writeAndFlush(response);
         log.info("user saved");
     }
 
-
+    @Command("delete_user")
+    public void handleDelete(ChannelHandlerContext ctx, Map<String, Object> data) {
+        userService.deleteById(Long.parseLong(data.get("id").toString()));
+        log.info("user deleted");
+        JsonMessage response = new JsonMessage();
+        response.setCommand("success");
+        ctx.writeAndFlush(response);
+    }
 }
