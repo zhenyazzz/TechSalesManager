@@ -1,5 +1,7 @@
 package org.com.techsalesmanagerclient.client;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -13,6 +15,9 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -28,6 +33,8 @@ public class NettyClient implements AutoCloseable {
     private final EventLoopGroup group;
     private Channel channel;
     private volatile CompletableFuture<JsonMessage> currentResponseFuture;
+
+    private final ObjectMapper mapper = new ObjectMapper();
 
     private NettyClient() throws InterruptedException {
         this.group = new NioEventLoopGroup();
@@ -136,6 +143,78 @@ public class NettyClient implements AutoCloseable {
             throw new TimeoutException("Response timeout");
         }
     }
+
+    public List<Map<String, Object>> sendListRequest(JsonMessage request) throws IOException, TimeoutException {
+        if (request == null || request.getCommand() == null) {
+            throw new IllegalArgumentException("Invalid request");
+        }
+        if (!channel.isActive()) {
+            throw new IOException("Channel is not active");
+        }
+
+        // Извлечение команды (например, "get_users" → "users")
+        String command = request.getCommand();
+        if (command.startsWith("get_")) {
+            command = command.substring(4); // Убираем "get_"
+        }
+        String itemKey = command.substring(0, command.length() - 1); // Например, "users" → "user"
+
+        List<Map<String, Object>> itemList = new ArrayList<>();
+        CompletableFuture<JsonMessage> responseFuture = new CompletableFuture<>();
+        this.currentResponseFuture = responseFuture;
+
+        // Отправка запроса
+        CompletableFuture<JsonMessage> finalResponseFuture = responseFuture;
+        channel.writeAndFlush(request).addListener(future -> {
+            if (!future.isSuccess()) {
+                String errorMsg = future.cause() != null ? future.cause().getMessage() : "Unknown error";
+                log.error("Send failed: {}", errorMsg);
+                JsonMessage error = new JsonMessage();
+                error.setCommand("error");
+                error.addData("reason", errorMsg);
+                finalResponseFuture.complete(error);
+            }
+        });
+
+        try {
+            while (true) {
+                JsonMessage response = responseFuture.get(3, TimeUnit.SECONDS);
+                this.currentResponseFuture = responseFuture = new CompletableFuture<>();
+
+                if (("start_" + command).equals(response.getCommand())) {
+                    log.info("Started receiving {}", command);
+                } else if (itemKey.equals(response.getCommand())) {
+                    Map<String, Object> item = mapper.convertValue(
+                            response.getData().get("user"),
+                            new TypeReference<Map<String, Object>>() {}
+                    );
+                    itemList.add(item);
+                    //log.debug("Received {}: {}", itemKey, item);
+                } else if (("end_" + command).equals(response.getCommand())) {
+                    log.info("Finished receiving {}", command);
+                    break;
+                } else if ("error".equals(response.getCommand())) {
+                    String reason = response.getData().get("reason").toString();
+                    log.error("Server error: {}", reason);
+                    throw new IOException("Server error: " + reason);
+                } else {
+                    log.error("Unexpected command: {}", response.getCommand());
+                    throw new IOException("Unexpected command: " + response.getCommand());
+                }
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException("Request interrupted", e);
+        } catch (ExecutionException e) {
+            throw new IOException("Request failed", e);
+        } catch (TimeoutException e) {
+            currentResponseFuture = null;
+            throw new TimeoutException("Response timeout");
+        }
+
+        return itemList;
+    }
+
 
     @Override
     public void close() {
