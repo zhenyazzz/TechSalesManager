@@ -78,6 +78,13 @@ public class UserService {
         return response;
     }
 
+    public List<User> findAll_List() {
+        log.info("Fetching all users");
+        List<User> users = userRepository.findAll();
+
+        return users;
+    }
+
     public JsonMessage findById(Long id) {
         log.info("Fetching user with id: {}", id);
         Optional<User> userOptional = userRepository.findById(id);

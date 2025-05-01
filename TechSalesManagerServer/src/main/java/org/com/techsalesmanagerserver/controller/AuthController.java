@@ -49,14 +49,12 @@ public class AuthController implements Controller{
 
         // Список пользователей (замените на данные из БД)
         Long a = 1L;
-        List<User> users = Arrays.asList(
-                new User("max", "kiz", "1", "1", "1", Role.CUSTOMER),
-                new User("maxi", "kiz", "1", "1", "1", Role.CUSTOMER)
-                // ... тысячи записей
-        );
+        List<User> users = userService.findAll_List();
+
 
         // Отправка каждого пользователя
         for (User user : users) {
+            user.setOrders(null);
             JsonMessage userResponse = new JsonMessage();
             userResponse.setCommand("user");
             userResponse.getData().put("user", user);

@@ -153,19 +153,10 @@ public class UserCrudController {
 
        // JsonMessage response = nettyClient.sendRequest(message);
         List<Map<String, Object>> response = nettyClient.sendListRequest(message);
+        System.out.println(response.toString());
         updateTableView(response);
         userTable.setItems(users);
-        // Настройка TableView
-        /*TableColumn<Map<String, Object>, Number> idColumn = (TableColumn<Map<String, Object>, Number>) userTable.getColumns().get(0);
-        idColumn.setCellValueFactory(new MapValueFactory<>("id"));
 
-        TableColumn<Map<String, Object>, String> usernameColumn = (TableColumn<Map<String, Object>, String>) userTable.getColumns().get(1);
-        usernameColumn.setCellValueFactory(new MapValueFactory<>("username"));
-
-        TableColumn<Map<String, Object>, String> roleColumn = (TableColumn<Map<String, Object>, String>) userTable.getColumns().get(2);
-        roleColumn.setCellValueFactory(new MapValueFactory<>("role"));
-
-        userTable.setItems(users);*/
 
 
 

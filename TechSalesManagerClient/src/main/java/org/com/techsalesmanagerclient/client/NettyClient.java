@@ -177,30 +177,68 @@ public class NettyClient implements AutoCloseable {
         });
 
         try {
-            while (true) {
-                JsonMessage response = responseFuture.get(3, TimeUnit.SECONDS);
-                this.currentResponseFuture = responseFuture = new CompletableFuture<>();
 
-                if (("start_" + command).equals(response.getCommand())) {
-                    log.info("Started receiving {}", command);
-                } else if (itemKey.equals(response.getCommand())) {
-                    Map<String, Object> item = mapper.convertValue(
-                            response.getData().get("user"),
-                            new TypeReference<Map<String, Object>>() {}
-                    );
-                    itemList.add(item);
-                    //log.debug("Received {}: {}", itemKey, item);
-                } else if (("end_" + command).equals(response.getCommand())) {
-                    log.info("Finished receiving {}", command);
-                    break;
-                } else if ("error".equals(response.getCommand())) {
-                    String reason = response.getData().get("reason").toString();
-                    log.error("Server error: {}", reason);
-                    throw new IOException("Server error: " + reason);
-                } else {
-                    log.error("Unexpected command: {}", response.getCommand());
-                    throw new IOException("Unexpected command: " + response.getCommand());
+
+            while (true) {
+
+                JsonMessage response = responseFuture.get(2, TimeUnit.SECONDS);
+                this.currentResponseFuture = responseFuture = new CompletableFuture<>();
+         /*
+         switch (response.getCommand()) {
+                    case "start_users":{
+                        log.info("Started receiving {}", command);
+                        break;
+                    }
+                    case "user":{
+                        Map<String, Object> item = mapper.convertValue(
+                                response.getData().get("user"),
+                                new TypeReference<Map<String, Object>>() {}
+                        );
+                        itemList.add(item);
+                        log.info("Received user {}", item);
+                        break;
+                    }
+                    case "end_users":{
+                        log.info("Finished receiving {}", command);
+                        return itemList;
+                    }
+                    case "error":{
+                        String reason = response.getData().get("reason").toString();
+                        log.error("Server error: {}", reason);
+                        throw new IOException("Server error: " + reason);
+
+                    }
+
                 }
+
+
+
+
+
+
+                */
+                if (("start_" + command).equals(response.getCommand())) {
+                            log.info("Started receiving {}", command);
+                        } else if ("end_users".equals(response.getCommand())) {
+                            log.info("Finished receiving {}", command);
+                            //return itemList;
+                            break;
+                        } else if ("user".equals(response.getCommand())) {
+                        Map<String, Object> item = mapper.convertValue(
+                                response.getData().get("user"),
+                                new TypeReference<Map<String, Object>>() {}
+                        );
+                        itemList.add(item);
+                        //log.debug("Received {}: {}", itemKey, item);
+
+                        } else if ("error".equals(response.getCommand())) {
+                            String reason = response.getData().get("reason").toString();
+                            log.error("Server error: {}", reason);
+                            throw new IOException("Server error: " + reason);
+                        } else {
+                            log.error("Unexpected command: {}", response.getCommand());
+                            throw new IOException("Unexpected command: " + response.getCommand());
+                        }
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
