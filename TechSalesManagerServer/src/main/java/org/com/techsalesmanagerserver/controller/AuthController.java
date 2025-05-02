@@ -23,6 +23,9 @@ import java.util.stream.Collectors;
 public class AuthController implements Controller{
     private final UserService userService;
 
+
+
+    //авторизация/регистрация
     @Command("login")
     public void handleLogin(ChannelHandlerContext ctx, Map<String, Object> data) {
         String username = (String) data.get("username");
@@ -47,6 +50,9 @@ public class AuthController implements Controller{
         ctx.writeAndFlush(response);
     }
 
+
+
+    //круд пользователя
     @Command("get_users")
     public void handleGet(ChannelHandlerContext ctx, Map<String, Object> data) {
 
@@ -121,6 +127,51 @@ public class AuthController implements Controller{
         log.info("user deleted");
         JsonMessage response = new JsonMessage();
         response.setCommand("success");
+        ctx.writeAndFlush(response);
+    }
+
+    @Command("update_user")
+    public void handleUpdate(ChannelHandlerContext ctx, Map<String, Object> data) {
+        log.info("Received command: {}", data);
+
+        User user = new User();
+        Long id = Long.parseLong(data.get("id").toString());
+        String name = (String) data.get("name");
+        String surname = (String) data.get("surname");
+        String username = (String) data.get("username");
+        String password = (String) data.get("password");
+        String email = (String) data.get("email");
+        String role = (String) data.get("role");
+
+        user.setId(id);
+        user.setName(name);
+        user.setSurname(surname);
+        user.setUsername(username);
+        user.setEmail(email);
+        user.setPassword(password);
+        user.setRole(Role.valueOf(role));
+        user.setOrders(null);
+
+
+        userService.updateUser(user);
+
+        JsonMessage response = new JsonMessage();
+        response.setCommand("success");
+        response.getData().put("user",user);
+        ctx.writeAndFlush(response);
+        log.info("user updated");
+        //update
+
+
+    }
+
+
+
+    //работа с пользователем
+
+    @Command("search_user")
+    public void handleFind(ChannelHandlerContext ctx, Map<String, Object> data) {
+        JsonMessage response = userService.findById(Long.parseLong(data.get("id").toString()));
         ctx.writeAndFlush(response);
     }
 }

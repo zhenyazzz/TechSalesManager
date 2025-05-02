@@ -27,6 +27,9 @@
 
     <center>
         <VBox spacing="10">
+            <padding>
+                <Insets bottom="10" left="20" right="20" top="10" />
+            </padding>
             <Label text="Работа с пользователями">
                 <font>
                     <Font size="20" />
@@ -34,12 +37,26 @@
             </Label>
 
             <HBox spacing="10">
-                <TextField fx:id="searchField" promptText="Поиск по имени или ID" />
-                <Button onAction="#handleSearch" text="Поиск" />
-                <ComboBox fx:id="filterComboBox" promptText="Фильтр по роли" />
-                <ComboBox fx:id="sortComboBox" promptText="Сортировка" />
-                <Button onAction="#handleFilterAndSort" text="Применить" />
+                <Button id="SearchButon" fx:id="SearchButton" onAction="#handleSearch" prefHeight="25.0" prefWidth="84.0" text="Поиск" />
+                <ComboBox fx:id="filterComboBox" prefHeight="25.0" prefWidth="235.0" promptText="Параметр фильтрации">
+               <HBox.margin>
+                  <Insets left="20.0" />
+               </HBox.margin></ComboBox>
+                <Button id="SubmitButton" fx:id="submitButton" onAction="#handleFilterAndSort" text="Применить">
+               <HBox.margin>
+                  <Insets left="20.0" />
+               </HBox.margin></Button>
             </HBox>
+         <HBox prefHeight="0.0" prefWidth="713.0">
+            <children>
+                   <TextField fx:id="searchField" prefHeight="25.0" prefWidth="84.0" promptText="Поиск по ID"  />
+               <TextField id="filterField" fx:id="filterField" prefHeight="25.0" prefWidth="235.0" promptText="Укажите диапазон (10-20) или значение">
+                  <HBox.margin>
+                     <Insets left="30.0" />
+                  </HBox.margin>
+               </TextField>
+            </children>
+         </HBox>
         </VBox>
     </center>
 
@@ -57,11 +74,17 @@
             <!-- Новый TableView для отображения списка пользователей -->
             <TableView fx:id="userTable" prefHeight="200">
                 <columns>
-                    <TableColumn fx:id="idColumn" prefWidth="100" text="ID" />
-                    <TableColumn fx:id="nameColumn" prefWidth="200" text="Имя" />
-                    <TableColumn fx:id="roleColumn" prefWidth="150" text="Роль" />
-                    <TableColumn fx:id="emailColumn" prefWidth="250" text="Email" />
+                    <TableColumn fx:id="idColumn" prefWidth="50" text="ID" />
+                    <TableColumn fx:id="nameColumn" prefWidth="100" text="Имя" />
+                    <TableColumn fx:id="surnameColumn" prefWidth="100" text="Фамилия" />
+                    <TableColumn fx:id="usernameColumn" prefWidth="150" text="Имя пользователя" />
+                    <TableColumn fx:id="emailColumn" prefWidth="150" text="Email" />
+                    <TableColumn fx:id="passwordColumn" prefWidth="100" text="Пароль" />
+                    <TableColumn fx:id="roleColumn" prefWidth="100" text="Роль" />
                 </columns>
+            <VBox.margin>
+               <Insets bottom="20.0" left="20.0" right="20.0" />
+            </VBox.margin>
             </TableView>
         </VBox>
     </bottom>

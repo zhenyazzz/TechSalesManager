@@ -94,6 +94,7 @@ public class UserService {
         JsonMessage response = new JsonMessage();
 
         if (userOptional.isPresent()) {
+            userOptional.get().setOrders(null);
             response.setCommand("success");
             response.getData().put("user", userOptional.get());
         } else {
@@ -104,6 +105,7 @@ public class UserService {
         return response;
     }
 
+    @Transactional
     public JsonMessage save(User user) {
         log.info("Saving user: {}", user);
 
@@ -153,6 +155,24 @@ public class UserService {
         log.warn("Authentication failed for user: {}", username);
         return createErrorResponse("Invalid credentials"); // Используем существующий метод
     }
+
+    public JsonMessage updateUser(User user) {
+
+        log.info("Updating user: {}", user);
+        Long id = user.getId();
+        if (userRepository.findById(id)!=null) {
+            User updatedUser = userRepository.save(user);
+
+            log.info("user updated: {}", updatedUser);
+            return createSuccessResponse("User updated successfully", updatedUser);
+        }
+        else{
+            log.info("user not found");
+            return createErrorResponse("User not found");
+        }
+
+    }
+
 
     private JsonMessage createSuccessResponse(String message, User user) {
         JsonMessage response = new JsonMessage();

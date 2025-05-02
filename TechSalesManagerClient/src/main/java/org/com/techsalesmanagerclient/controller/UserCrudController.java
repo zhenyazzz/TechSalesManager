@@ -276,8 +276,26 @@ public class UserCrudController {
     }
 
     @FXML
-    void handleUpdate(ActionEvent event) {
-
+    void handleUpdate(ActionEvent event) throws IOException, TimeoutException {
+        Long id=Long.parseLong(idField.getText());
+        String name = nameField.getText();
+        String surname = surnameField.getText();
+        String username = usernameField.getText();
+        String password = passwordField.getText();
+        String email = emailField.getText();
+        String role = roleComboBox.getValue();
+        JsonMessage request = new JsonMessage();
+        request.setCommand("update_user");
+        request.addData("id",id);
+        request.addData("name",name);
+        request.addData("surname",surname);
+        request.addData("username", username);
+        request.addData("email",email);
+        request.addData("password", password);
+        request.addData("role", role);
+        JsonMessage response = nettyClient.sendRequest(request);
+        log.info(response.toString());
+        workWithScenes.loadScene("/org/com/techsalesmanagerclient/User_CRUD.fxml",createButton);
     }
 
 
