@@ -147,6 +147,7 @@ public class UserWorkController {
 
     @FXML
     void handleSearch(ActionEvent event) throws IOException, TimeoutException {
+
         Long id = Long.valueOf(searchField.getText());
 
         JsonMessage request = new JsonMessage();
@@ -154,21 +155,28 @@ public class UserWorkController {
 
         request.addData("id", id);
         JsonMessage response = nettyClient.sendRequest(request);
-        clearAndFillTableWithSingleUser(response.getData());
-        log.info(response.toString());
+        if (response.getCommand().equals("success")) {
+            clearAndFillTableWithSingleUser(response.getData());
+            log.info(response.toString());
+        }
+        else {
+            log.error(response.toString());
+        }
     }
 
     private void clearAndFillTableWithSingleUser(Map<String, Object> user) {
         log.info("Clearing and filling TableView with single user: {}", user);
         Platform.runLater(() -> {
             users.clear();
-            Map<String, Object> normalizedUser = normalizeMap(user);
+            Map<String, Object> normalizedUser = normalizeUser(user);
             users.add(normalizedUser);
-            log.debug("TableView updated with single user: {}", normalizedUser);
+            userTable.setItems(users);
+            log.debug("TableView updated with single user: {}", users);
         });
     }
 
     private void updateTableView(List<Map<String, Object>> response) {
+
         log.info("Updating TableView with {} items", response.size());
         List<Map<String, Object>> normalizedList = response.stream().map(this::normalizeMap).collect(Collectors.toList());
         Platform.runLater(() -> {
@@ -179,10 +187,40 @@ public class UserWorkController {
         userTable.setItems(users);
     }
 
+    private Map<String, Object> normalizeUser(Map<String, Object> input) {
+        log.info("Normalizing user data: {}", input);
+
+        // Извлекаем внутреннюю карту user
+        Map<String, Object> userData = (Map<String, Object>) input.get("user");
+        if (userData == null) {
+            log.error("No 'user' key found in input: {}", input);
+            throw new IllegalArgumentException("No 'user' key found in input");
+        }
+
+        // Нормализуем данные пользователя
+        Map<String, Object> normalized = new HashMap<>();
+        for (String key : expectedKeys) {
+            normalized.put(key, userData.getOrDefault(key, null));
+        }
+
+        // Проверяем на лишние ключи
+        if (!userData.keySet().stream().allMatch(expectedKeys::contains)) {
+            List<String> extraKeys = userData.keySet().stream()
+                    .filter(key -> !expectedKeys.contains(key))
+                    .collect(Collectors.toList());
+            log.warn("Found extra keys in user data: {}", extraKeys);
+        }
+
+        log.debug("Normalized user: {}", normalized);
+        return normalized;
+    }
+
     private Map<String, Object> normalizeMap(Map<String, Object> input) {
+        log.info("Normalizing map: {}", input);
         Map<String, Object> normalized = new HashMap<>();
         for (String key : expectedKeys) {
             normalized.put(key, input.getOrDefault(key, null));
+
         }
         if (!input.keySet().stream().allMatch(expectedKeys::contains)) {
             List<String> extraKeys = input.keySet().stream()
