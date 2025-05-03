@@ -2,24 +2,21 @@ package org.com.techsalesmanagerclient.controller;
 
 
 
-import java.io.IOException;
 import java.net.URL;
-import java.util.Map;
 import java.util.Random;
 import java.util.ResourceBundle;
 
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.text.Text;
-import javafx.stage.Stage;
-import org.com.techsalesmanagerclient.client.JsonMessage;
-import org.com.techsalesmanagerclient.client.NettyClient;
+import lombok.extern.slf4j.Slf4j;
+import org.com.techsalesmanagerclient.client.*;
+import org.com.techsalesmanagerclient.enums.RequestType;
+import org.com.techsalesmanagerclient.enums.Role;
 
+@Slf4j
 public class LogInController {
 
     @FXML
@@ -44,7 +41,6 @@ public class LogInController {
 
     @FXML
     private Text passwordErrorMessage;
-    private final NettyClient nettyClient = NettyClient.getInstance();
     private final WorkWithScenes workWithScenes = new WorkWithScenes();
 
     public LogInController() throws InterruptedException {
@@ -64,37 +60,32 @@ public class LogInController {
                 passwordErrorMessage.setText("");
                 nicknameErrorMessage.setText("");
 
-
-
                 String nickname = logInNicknameField.getText().trim();
                 String password = PasswordField.getText().trim();
 
-                JsonMessage message = new JsonMessage();
-                message.setCommand("login");
-                message.addData("username", nickname);
-                message.addData("password", password);
+                LoginForm loginForm = new LoginForm();
+                loginForm.setLogin(nickname);
+                loginForm.setPassword(password);
 
+                Request request = new Request(RequestType.AUTHORIZATION, JsonUtils.toJson(loginForm));
 
-                JsonMessage response = nettyClient.sendRequest(message);
+                Response response =  Client.send(request);
 
+                LoginResult result = JsonUtils.fromJson(response.getBody(), LoginResult.class);
 
-
-                if(((String)((Map<?, ?>) response.getData().get("user")).get("role")).equals("ADMIN")) {
+                if(result.getRole().equals(Role.ADMIN)) {
                     System.out.println("admin");
                     workWithScenes.loadScene("/org/com/techsalesmanagerclient/Admin_Menu.fxml", signUpButton);
-                } else if (((String)((Map<?, ?>) response.getData().get("user")).get("role")).equals("CUSTOMER")) {
+                } else if (result.getRole().equals(Role.CUSTOMER)) {
                     System.out.println("user");
                     workWithScenes.loadScene("/org/com/techsalesmanagerclient/User_Menu.fxml", signUpButton);
                 }
                 else {
-                    System.out.println(response.getCommand());
-
+                    System.out.println(response);
                 }
-
 
             } catch (Exception e) {
                 System.out.println(e.getMessage());
-                //throw new RuntimeException("Ошибка отправки сообщения");
             }
         });
     }

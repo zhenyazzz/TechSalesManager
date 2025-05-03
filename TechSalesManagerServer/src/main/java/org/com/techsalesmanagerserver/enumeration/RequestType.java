@@ -1,0 +1,17 @@
+package org.com.techsalesmanagerserver.enumeration;
+
+public enum RequestType {
+    AUTHORIZATION,
+    GET_ALL_CATEGORIES,
+    ADD_CATEGORY,
+    UPDATE_CATEGORY,
+    REMOVE_CATEGORY,
+    GET_ALL_SUPPLIERS,
+    ADD_SUPPLIER,
+    UPDATE_SUPPLIER,
+    REMOVE_SUPPLIER,
+    GET_ALL_CUSTOMERS,
+    ADD_CUSTOMER,
+    UPDATE_CUSTOMER,
+    REMOVE_CUSTOMER
+}

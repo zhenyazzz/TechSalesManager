@@ -9,10 +9,7 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.MapValueFactory;
 import lombok.extern.slf4j.Slf4j;
-import org.com.techsalesmanagerclient.client.JsonMessage;
-import org.com.techsalesmanagerclient.client.NettyClient;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;

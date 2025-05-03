@@ -12,8 +12,9 @@ import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.text.Text;
-import org.com.techsalesmanagerclient.client.JsonMessage;
-import org.com.techsalesmanagerclient.client.NettyClient;
+import org.com.techsalesmanagerclient.client.*;
+import org.com.techsalesmanagerclient.enums.RequestType;
+import org.com.techsalesmanagerclient.enums.ResponseStatus;
 import org.jetbrains.annotations.NotNull;
 
 
@@ -61,7 +62,6 @@ public class SignUpController implements SignUpInformation {
 
 
     private final WorkWithScenes workWithScenes = new WorkWithScenes();
-    private final NettyClient nettyClient  = NettyClient.getInstance();
     private final LinkedList<String> listOfEmptyFields = new LinkedList<>();
 
     public SignUpController() throws InterruptedException {
@@ -77,38 +77,34 @@ public class SignUpController implements SignUpInformation {
         signUpSignUpButton.setOnAction(eventForSignUpButtonInSignUpWindow -> {
             setToDefaultFields(signUpName, signUpNickname, signUpSurname, signUpPassword, signUpEmail);
             setToDefaultTextErrorsMessages(nameErrorMessage, surnameErrorMessage, nicknameErrorMessage, passwordErrorMessage, globalErrorsText, emailErrorMessage);
-            JsonMessage request = getJsonMessage();
+            SingUpForm singUpForm = createSingUpForm();
 
             System.out.println("Отправка данных на сервер ");
             try {
-                JsonMessage response = nettyClient.sendRequest(request);
-                if (response.getCommand().equals("success")){
+                Request request = new Request(RequestType.AUTHORIZATION, JsonUtils.toJson(singUpForm));
+
+                Response response =  Client.send(request);
+
+                SingUpResult result = JsonUtils.fromJson(response.getBody(), SingUpResult.class);
+                if (response.getStatus().equals(ResponseStatus.Ok)){
                     workWithScenes.loadScene("/org/com/techsalesmanagerclient/emailVerification.fxml", signUpLogInButton);
                 }
 
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            } catch (TimeoutException e) {
+            } catch (IOException | ClassNotFoundException e) {
                 throw new RuntimeException(e);
             }
         });
     }
 
     @NotNull
-    private JsonMessage getJsonMessage() {
-        String name = signUpName.getText();
-        String surname = signUpSurname.getText();
-        String nickname = signUpNickname.getText();
-        String password = signUpPassword.getText();
-        String email = signUpEmail.getText();
-        JsonMessage request = new JsonMessage();
-        request.setCommand("register");
-        request.addData("name",name);
-        request.addData("surname",surname);
-        request.addData("username", nickname);
-        request.addData("email",email);
-        request.addData("password", password);
-        return request;
+    private SingUpForm createSingUpForm() {
+        return new SingUpForm(
+                signUpName.getText(),
+                signUpSurname.getText(),
+                signUpNickname.getText(),
+                signUpPassword.getText(),
+                signUpEmail.getText()
+        );
     }
 
     private boolean checkAllParameters(String name, String surname, String nickname, String password, String email) {

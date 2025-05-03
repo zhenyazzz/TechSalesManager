@@ -10,8 +10,6 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import lombok.extern.slf4j.Slf4j;
-import org.com.techsalesmanagerclient.client.JsonMessage;
-import org.com.techsalesmanagerclient.client.NettyClient;
 
 import java.io.IOException;
 import java.util.*;

@@ -1,12 +1,13 @@
 package org.com.techsalesmanagerserver.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.com.techsalesmanagerserver.enumeration.ResponseStatus;
 import org.com.techsalesmanagerserver.model.User;
 import org.com.techsalesmanagerserver.repository.UserRepository;
-import org.com.techsalesmanagerserver.server.init.JsonMessage;
-import org.mindrot.jbcrypt.BCrypt;
+import org.com.techsalesmanagerserver.server.*;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,39 +19,21 @@ import java.util.Optional;
 public class UserService {
     private final UserRepository userRepository;
 
-    public JsonMessage findByUsernameAndPassword(String username, String password) {
-        log.info("Attempting to find user by username: {}", username);
+    public Response authenticate(Request authenticateRequest) throws JsonProcessingException {
+        AuthorizationForm authorizationForm = JsonUtils.fromJson(authenticateRequest.getBody(), AuthorizationForm.class);
+        log.info("Attempting to find user by username: {}", authorizationForm.getLogin());
 
-        // Ищем пользователя по имени
-        Optional<User> userOptional = userRepository.findByUsername(username);
-        log.info("User Found: {}", userOptional.isPresent());
-        JsonMessage response = new JsonMessage();
-
-        if (userOptional.isPresent()) {
-            User user = new User();
-            user.setUsername(userOptional.get().getUsername());
-            user.setPassword(userOptional.get().getPassword());
-            user.setRole(userOptional.get().getRole());
-            user.setEmail(userOptional.get().getEmail());
-            user.setName(userOptional.get().getName());
-            user.setSurname(userOptional.get().getSurname());
-            log.info("Attempting check the password: {}", password);
-            // Проверяем совпадение паролей (рекомендуется использовать BCrypt)
-            if (passwordMatches(user.getPassword(), password)) {
-
-                response.setCommand("success");
-                response.getData().put("user", user);
-                log.info("User found and password matches");
-            } else {
-
-                response.setCommand("error");
-                response.getData().put("message", "Invalid password");
-                log.warn("Password mismatch for user: {}", username);
-            }
+        Optional<User> userOptional = userRepository.findByUsername(authorizationForm.getLogin());
+        Response response = new Response();
+        // еще проверку пароля наверное можно сюда добавить в условие
+        if (userOptional.isPresent() && passwordMatches(userOptional.get().getPassword(), authorizationForm.getPassword())) {
+            response.setStatus(ResponseStatus.Ok);
+            response.setBody(JsonUtils.toJson(new AuthorizationResult(userOptional.get().getId(), userOptional.get().getRole())));
+            log.info("User found: {}", userOptional.get().getUsername());
         } else {
-            response.setCommand("error");
-            response.getData().put("message", "User not found");
-            log.warn("User not found with username: {}", username);
+            response.setStatus(ResponseStatus.ERROR);
+            response.setBody("Пользователь не найден");
+            log.warn("User not found with username: {}", authorizationForm.getLogin());
         }
 
         return response;
@@ -69,13 +52,10 @@ public class UserService {
         //return BCrypt.checkpw(rawPassword, storedHash);
     }
 
-    public JsonMessage findAll() {
+    public Response findAll() throws JsonProcessingException {
         log.info("Fetching all users");
         List<User> users = userRepository.findAll();
-        JsonMessage response = new JsonMessage();
-        response.setCommand("success");
-        response.getData().put("users", users);
-        return response;
+        return new Response(ResponseStatus.Ok, JsonUtils.toJson(users));
     }
 
     public List<User> findAll_List() {
@@ -87,105 +67,85 @@ public class UserService {
         return users;
     }
 
-    public JsonMessage findById(Long id) {
+    public Response findById(Long id) throws JsonProcessingException {
         log.info("Fetching user with id: {}", id);
         Optional<User> userOptional = userRepository.findById(id);
 
-        JsonMessage response = new JsonMessage();
-
+        Response response = new Response();
         if (userOptional.isPresent()) {
             userOptional.get().setOrders(null);
-            response.setCommand("success");
-            response.getData().put("user", userOptional.get());
+            response.setStatus(ResponseStatus.Ok);
+            response.setBody(JsonUtils.toJson(userOptional.get()));
         } else {
-            response.setCommand("error");
-            response.getData().put("message", "User not found");
+            response.setStatus(ResponseStatus.ERROR);
+            response.setBody("Пользователь не найден");
         }
 
         return response;
     }
 
     @Transactional
-    public JsonMessage save(User user) {
-        log.info("Saving user: {}", user);
+    public Response register(Request registerRequest) throws JsonProcessingException {
+        SingUpForm singUpForm = JsonUtils.fromJson(registerRequest.getBody(), SingUpForm.class);
+        log.info("Saving user: {}", singUpForm.getNickname());
 
-        if (userRepository.findByUsername(user.getUsername()).isPresent()) {
-            return createErrorResponse("User already exists");
+        if (userRepository.findByUsername(singUpForm.getNickname()).isPresent()) {
+            return new Response(ResponseStatus.ERROR, "Плдьзователь уже существует");
         }
-
-        User savedUser = userRepository.save(user);
-        return createSuccessResponse("User saved successfully", savedUser);
+        User savedUser = userRepository.save(
+                new User(singUpForm.getName(),
+                        singUpForm.getSurname(),
+                        singUpForm.getNickname(),
+                        singUpForm.getEmail(),
+                        singUpForm.getPassword()));
+        return new Response(ResponseStatus.Ok, JsonUtils.toJson(
+                new SingUpResult(
+                        savedUser.getId(),
+                        savedUser.getName(),
+                        savedUser.getSurname(),
+                        savedUser.getUsername(),
+                        savedUser.getEmail(),
+                        savedUser.getPassword(),
+                        savedUser.getRole()
+                )
+        ));
     }
 
-    public JsonMessage deleteById(Long id) {
+    public Response deleteById(Request deleteRequest) throws JsonProcessingException {
+        Long id = JsonUtils.fromJson(deleteRequest.getBody(), Long.class);
         log.info("Deleting user with id: {}", id);
 
         if (userRepository.existsById(id)) {
             userRepository.deleteById(id);
-            return createSuccessResponse("User deleted successfully", null);
+            return new Response(ResponseStatus.Ok, "Пользователь успешно удален");
         } else {
-            return createErrorResponse("User not found");
+            return new Response(ResponseStatus.ERROR, "Пользователь не найден");
         }
     }
 
-    @Transactional
-    public JsonMessage register(User user) {
-        log.info("Registering user: {}", user);
 
-        if (userRepository.findByUsername(user.getUsername()).isPresent()) {
-            return createErrorResponse("User already exists");
-        }
-
-        User savedUser = userRepository.save(user);
-        return createSuccessResponse("User registered successfully", savedUser);
-    }
-
-    public JsonMessage authenticate(String username, String password) {
-
-        log.info("Attempting authentication for user: {}", username);
-
-        JsonMessage authResponse = findByUsernameAndPassword(username, password);
-
-        if ("success".equals(authResponse.getCommand())) {
-            log.info("Authentication successful for user: {}", username);
-
-            return authResponse; // Уже содержит user и success-статус
-        }
-
-        log.warn("Authentication failed for user: {}", username);
-        return createErrorResponse("Invalid credentials"); // Используем существующий метод
-    }
-
-    public JsonMessage updateUser(User user) {
-
+    public Response updateUser(Request updateRequest) throws JsonProcessingException {
+        User user = JsonUtils.fromJson(updateRequest.getBody(), User.class);
         log.info("Updating user: {}", user);
-        Long id = user.getId();
-        if (userRepository.findById(id)!=null) {
+        if (userRepository.findById(user.getId()).isPresent()) {
             User updatedUser = userRepository.save(user);
-
             log.info("user updated: {}", updatedUser);
-            return createSuccessResponse("User updated successfully", updatedUser);
+            return new Response(ResponseStatus.Ok, JsonUtils.toJson(updatedUser));
         }
         else{
             log.info("user not found");
-            return createErrorResponse("User not found");
+            return new Response(ResponseStatus.ERROR, "user not found");
         }
 
     }
+    public Response createUser(Request createRequest) throws JsonProcessingException {
+        User user = JsonUtils.fromJson(createRequest.getBody(),User.class);
+        if (userRepository.findByUsername(user.getUsername()).isPresent()) {
+            return new Response(ResponseStatus.ERROR, "Пользователь уже существует");
+        }
 
-
-    private JsonMessage createSuccessResponse(String message, User user) {
-        JsonMessage response = new JsonMessage();
-        response.setCommand("success");
-        response.getData().put("message", message);
-        response.getData().put("data", user);
-        return response;
+        return new Response(ResponseStatus.Ok,JsonUtils.toJson(userRepository.save(user)));
     }
 
-    private JsonMessage createErrorResponse(String errorMessage) {
-        JsonMessage response = new JsonMessage();
-        response.setCommand("error");
-        response.getData().put("message", errorMessage);
-        return response;
-    }
+
 }

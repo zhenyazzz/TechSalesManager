@@ -29,5 +29,7 @@ module org.com.techsalesmanagerclient {
     exports org.com.techsalesmanagerclient.controller;
     exports org.com.techsalesmanagerclient.client;
     opens org.com.techsalesmanagerclient.client to javafx.fxml;
+    exports org.com.techsalesmanagerclient.enums;
+    opens org.com.techsalesmanagerclient.enums to javafx.fxml;
 
 }
