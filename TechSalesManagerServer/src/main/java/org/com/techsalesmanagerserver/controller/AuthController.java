@@ -31,7 +31,7 @@ public class AuthController implements Controller{
     }
 
     //круд пользователя
-    @Command(RequestType.GET_ALL_CUSTOMERS)
+    @Command(RequestType.GET_ALL_USERS)
     public void handleGet(PrintWriter writer, Request request) throws JsonProcessingException {
         writer.println(JsonUtils.toJson(userService.findAll()));
     }

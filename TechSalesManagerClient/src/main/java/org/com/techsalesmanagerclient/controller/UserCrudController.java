@@ -209,9 +209,9 @@ public class UserCrudController {
         //handleSearch(event);
     }
 
-    /*@FXML
+    @FXML
     void handleDelete(ActionEvent event) {
-        try {
+     /*   try {
             // Получаем ID из поля ввода (заполняется при выборе записи в TableView)
             String idText = idField.getText();
             if (idText == null || idText.isEmpty()) {
@@ -262,8 +262,8 @@ public class UserCrudController {
         } catch (Exception e) {
             log.error("Failed to delete user: {}", e.getMessage(), e);
             Platform.runLater(() -> showAlert("Error", "Не удалось удалить пользователя: " + e.getMessage()));
-        }
-    }*/
+        }*/
+    }
 
     @FXML
     void handleExit(ActionEvent event) {
