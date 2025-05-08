@@ -3,6 +3,7 @@ package org.com.techsalesmanagerserver.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.com.techsalesmanagerserver.enumeration.RequestType;
 import org.com.techsalesmanagerserver.server.JsonUtils;
 import org.com.techsalesmanagerserver.server.Request;
 import org.com.techsalesmanagerserver.service.UserService;
@@ -17,40 +18,40 @@ public class AuthController implements Controller{
     private final UserService userService;
 
     //авторизация/регистрация
-    @Command("login")
+    @Command(RequestType.AUTHORIZATION)
     public void handleLogin(PrintWriter writer, Request request) throws JsonProcessingException {
         writer.println(userService.authenticate(request));
     }
 
-    @Command("register")
+    @Command(RequestType.REGISTRATION)
     public void handleRegister(PrintWriter writer, Request request) throws JsonProcessingException {
         writer.println(userService.register(request));
     }
 
     //круд пользователя
-    @Command("get_users")
+    @Command(RequestType.GET_ALL_CUSTOMERS)
     public void handleGet(PrintWriter writer, Request request) throws JsonProcessingException {
         writer.println(userService.findAll());
     }
 
-    @Command("create_user")
+    @Command(RequestType.CREATE_USER)
     public void handleCreate(PrintWriter writer, Request request) throws JsonProcessingException {
         writer.println(userService.createUser(request));
     }
 
-    @Command("delete_user")
+    @Command(RequestType.DELETE_USER)
     public void handleDelete(PrintWriter writer, Request request) throws JsonProcessingException {
         writer.println(userService.deleteById(request));
     }
 
-    @Command("update_user")
+    @Command(RequestType.UPDATE_USER)
     public void handleUpdate(PrintWriter writer, Request request) throws JsonProcessingException {
         log.info("Received command: {}", request.getType());
         writer.println(userService.updateUser(request));
         log.info("user updated");
     }
 
-    @Command("search_user")
+    @Command(RequestType.SEARCH_USER)
     public void handleFind(PrintWriter writer, Request request) throws JsonProcessingException {
         writer.println(userService.findById(JsonUtils.fromJson(request.getBody(), Long.class)));
     }

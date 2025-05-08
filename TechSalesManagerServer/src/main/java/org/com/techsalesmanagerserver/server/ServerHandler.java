@@ -4,6 +4,7 @@ package org.com.techsalesmanagerserver.server;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.com.techsalesmanagerserver.controller.Command;
 import org.com.techsalesmanagerserver.controller.Controller;
+import org.com.techsalesmanagerserver.enumeration.RequestType;
 import org.com.techsalesmanagerserver.enumeration.ResponseStatus;
 
 import java.io.*;
@@ -15,7 +16,7 @@ import java.util.Map;
 
 public class ServerHandler implements Runnable {
     private final List<Controller> controllers;
-    private final Map<String, Method> commandMap = new HashMap<>();
+    private final Map<RequestType, Method> commandMap = new HashMap<>();
     protected Socket clientSocket = null;
     BufferedReader reader = null;
     PrintWriter writer = null;
@@ -69,7 +70,7 @@ public class ServerHandler implements Runnable {
                 Request request = JsonUtils.fromJson(reader.readLine(), Request.class);
                 System.out.println("Server received command from client: " + request.toString());
 
-                Method handler = commandMap.get(request.getType().name());
+                Method handler = commandMap.get(request.getType());
 
                 if (handler != null) {
                     invokeHandler(handler, writer, request);

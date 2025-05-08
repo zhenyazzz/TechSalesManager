@@ -1,5 +1,6 @@
 package org.com.techsalesmanagerclient.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import javafx.application.Platform;
@@ -10,7 +11,12 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import lombok.extern.slf4j.Slf4j;
+import org.com.techsalesmanagerclient.client.JsonUtils;
+import org.com.techsalesmanagerclient.client.Request;
+import org.com.techsalesmanagerclient.client.Response;
+import org.com.techsalesmanagerclient.enums.RequestType;
 import org.jetbrains.annotations.NotNull;
+import org.com.techsalesmanagerclient.client.Client;
 
 import java.io.IOException;
 import java.util.*;
@@ -82,7 +88,7 @@ public class UserCrudController {
 
     private final ObjectMapper mapper = new ObjectMapper();
     private final ObservableList<Map<String, Object>> users = FXCollections.observableArrayList();
-    private final NettyClient nettyClient = NettyClient.getInstance();
+   
     private final WorkWithScenes workWithScenes = new WorkWithScenes();
     private final List<String> expectedKeys = Arrays.asList("id", "name", "surname", "username", "email", "password", "role");
 
@@ -90,7 +96,7 @@ public class UserCrudController {
     }
 
     @FXML
-    void initialize() throws IOException, TimeoutException {
+    void initialize() throws IOException, TimeoutException, ClassNotFoundException {
         roleComboBox.getItems().add("CUSTOMER");
         roleComboBox.getItems().add("ADMIN");
 
@@ -150,38 +156,30 @@ public class UserCrudController {
             }
         });
 
-        JsonMessage request = new JsonMessage();
-        request.setCommand("get_users");
-        request.addData("command","get_users");
+        Request request = new Request(RequestType.GET_ALL_USERS,"");
 
-        JsonMessage response = nettyClient.sendRequest(request);
+        Response response = Client.send(request);
         log.info(response.toString());
-        updateTableView(extractUsersFromJsonMessage(response));
+        //updateTableView(extractUsersFromRequest(response));
 
-      /* // JsonMessage response = nettyClient.sendRequest(message);
+      /* // Request response = nettyClient.sendRequest(message);
         List<Map<String, Object>> response = nettyClient.sendListRequest(message);
         System.out.println(response.toString());
         updateTableView(response);*/
-       
-
-
 
 
     }
 
     @FXML
-    void handleSearch(ActionEvent event) throws IOException, TimeoutException {
-        JsonMessage request = new JsonMessage();
-        request.setCommand("get_users");
-        request.addData("command","get_users");
+    void handleSearch(ActionEvent event) throws IOException, TimeoutException, ClassNotFoundException {
+        Request request = new Request(RequestType.GET_ALL_USERS, "");
 
 
-
-        // JsonMessage response = nettyClient.sendRequest(message);
+        // Request response = nettyClient.sendRequest(message);
         //List<Map<String, Object>> response = nettyClient.sendListRequest(message);
-        JsonMessage response = nettyClient.sendRequest(request);
+        Response response = Client.send(request);
 
-        updateTableView(extractUsersFromJsonMessage(response));
+        //updateTableView(extractUsersFromRequest(response));
         userTable.setItems(users);
         
         
@@ -189,7 +187,7 @@ public class UserCrudController {
 
 
     @FXML
-    void handleCreate(ActionEvent event) throws IOException, TimeoutException {
+    void handleCreate(ActionEvent event) throws IOException, TimeoutException, ClassNotFoundException {
 
         String name = nameField.getText();
         String surname = surnameField.getText();
@@ -197,21 +195,21 @@ public class UserCrudController {
         String password = passwordField.getText();
         String email = emailField.getText();
         String role = roleComboBox.getValue();
-        JsonMessage request = new JsonMessage();
-        request.setCommand("create_user");
-        request.addData("name",name);
-        request.addData("surname",surname);
-        request.addData("username", username);
-        request.addData("email",email);
-        request.addData("password", password);
-        request.addData("role", role);
-        JsonMessage response = nettyClient.sendRequest(request);
+        Request request = new Request(RequestType.CREATE_USER, "");
+        Map<String, Object> data = new HashMap<>();
+        data.put("name",name);
+        data.put("surname",surname);
+        data.put("username", username);
+        data.put("email",email);
+        data.put("password", password);
+        data.put("role", role);
+        Response response = Client.send(request);
         log.info(response.toString());
         workWithScenes.loadScene("/org/com/techsalesmanagerclient/User_CRUD.fxml",createButton);
         //handleSearch(event);
     }
 
-    @FXML
+    /*@FXML
     void handleDelete(ActionEvent event) {
         try {
             // Получаем ID из поля ввода (заполняется при выборе записи в TableView)
@@ -231,13 +229,13 @@ public class UserCrudController {
             }
 
             // Создаём запрос на удаление
-            JsonMessage request = new JsonMessage();
+            Request request = new Request(RequestType.DELETE_USER, JsonUtils.toJson(loginForm));
             request.setCommand("delete_user");
-            request.addData("id", userId);
+            data.put("id", userId);
             log.debug("Sending delete request: {}", request);
 
             // Отправляем запрос на сервер
-            JsonMessage response = nettyClient.sendRequest(request);
+            Request response = nettyClient.sendRequest(request);
             log.debug("Received response: {}", response);
 
             // Обрабатываем ответ от сервера
@@ -265,7 +263,7 @@ public class UserCrudController {
             log.error("Failed to delete user: {}", e.getMessage(), e);
             Platform.runLater(() -> showAlert("Error", "Не удалось удалить пользователя: " + e.getMessage()));
         }
-    }
+    }*/
 
     @FXML
     void handleExit(ActionEvent event) {
@@ -273,7 +271,7 @@ public class UserCrudController {
     }
 
     @FXML
-    void handleUpdate(ActionEvent event) throws IOException, TimeoutException {
+    void handleUpdate(ActionEvent event) throws IOException, TimeoutException, ClassNotFoundException {
         Long id=Long.parseLong(idField.getText());
         String name = nameField.getText();
         String surname = surnameField.getText();
@@ -281,16 +279,17 @@ public class UserCrudController {
         String password = passwordField.getText();
         String email = emailField.getText();
         String role = roleComboBox.getValue();
-        JsonMessage request = new JsonMessage();
-        request.setCommand("update_user");
-        request.addData("id",id);
-        request.addData("name",name);
-        request.addData("surname",surname);
-        request.addData("username", username);
-        request.addData("email",email);
-        request.addData("password", password);
-        request.addData("role", role);
-        JsonMessage response = nettyClient.sendRequest(request);
+        Map<String, Object> data = new HashMap<>();
+
+        data.put("id",id);
+        data.put("name",name);
+        data.put("surname",surname);
+        data.put("username", username);
+        data.put("email",email);
+        data.put("password", password);
+        data.put("role", role);
+        Request request = new Request(RequestType.AUTHORIZATION, JsonUtils.toJson(data));
+        Response response = Client.send(request);
         log.info(response.toString());
         workWithScenes.loadScene("/org/com/techsalesmanagerclient/User_CRUD.fxml",createButton);
     }
@@ -322,25 +321,26 @@ public class UserCrudController {
     }
 
     @NotNull
-    private JsonMessage getJsonMessage() {
+    private Request getRequest() throws JsonProcessingException {
         String name = nameField.getText();
         String surname = surnameField.getText();
         String username = usernameField.getText();
         String password = passwordField.getText();
         String email = emailField.getText();
         String role = roleComboBox.getValue();
-        JsonMessage request = new JsonMessage();
-        request.setCommand("create_user");
-        request.addData("name",name);
-        request.addData("surname",surname);
-        request.addData("username", username);
-        request.addData("email",email);
-        request.addData("password", password);
-        request.addData("role", role);
+        Map<String, Object> data = new HashMap<>();
+
+        data.put("name",name);
+        data.put("surname",surname);
+        data.put("username", username);
+        data.put("email",email);
+        data.put("password", password);
+        data.put("role", role);
+        Request request = new Request(RequestType.CREATE_USER, JsonUtils.toJson(data));
         return request;
     }
 
-    public List<Map<String, Object>> extractUsersFromJsonMessage(JsonMessage message) {
+/*    public List<Map<String, Object>> extractUsersFromRequest(Request message) {
         if (!"users".equals(message.getCommand())) {
             log.error("Invalid command: expected 'users', got '{}'", message.getCommand());
             throw new IllegalArgumentException("Invalid command: " + message.getCommand());
@@ -367,7 +367,7 @@ public class UserCrudController {
                         usersData,
                         new TypeReference<List<Map<String, Object>>>() {}
                 );
-                log.info("Extracted {} users from JsonMessage", userList.size());
+                log.info("Extracted {} users from Request", userList.size());
                 return userList;
             } else {
                 // Если данные пришли как объект (Map)
@@ -379,10 +379,10 @@ public class UserCrudController {
                 return userList;
             }
         } catch (Exception e) {
-            log.error("Failed to parse users from JsonMessage: {}", e.getMessage(), e);
+            log.error("Failed to parse users from Request: {}", e.getMessage(), e);
             throw new IllegalArgumentException("Failed to parse users: " + e.getMessage(), e);
         }
-    }
+    }*/
 
     private void populateFields(Map<String, Object> user) {
         idField.setText(user.get("id") != null ? user.get("id").toString() : "");

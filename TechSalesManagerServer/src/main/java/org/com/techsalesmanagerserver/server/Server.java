@@ -23,6 +23,8 @@ public class Server implements Runnable {
         this.controllers = controllers;
         this.serverPort = 8080;
         this.countClients = 0;
+        run();
+
     }
 
     @Override

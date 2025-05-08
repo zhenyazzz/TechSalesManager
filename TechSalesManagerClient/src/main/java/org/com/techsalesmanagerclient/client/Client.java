@@ -28,6 +28,7 @@ public class Client {
             Socket clientSocket = new Socket(ip, port);
             outStream = new PrintWriter(clientSocket.getOutputStream(), true);
             inStream = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+            System.out.println("Connected to " + ip + ":" + port);
         }catch (IOException e){
             System.out.println("Can't connect to server" + e.getMessage());
             exit(0);

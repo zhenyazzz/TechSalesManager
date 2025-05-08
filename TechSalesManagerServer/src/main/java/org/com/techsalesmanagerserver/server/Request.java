@@ -11,6 +11,9 @@ import java.io.Serializable;
 @Data
 @AllArgsConstructor
 public class Request implements Serializable{
+    public Request() {
+    }
+
     private RequestType type;
     private String body;
 }

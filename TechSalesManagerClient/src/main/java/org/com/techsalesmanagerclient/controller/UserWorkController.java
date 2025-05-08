@@ -10,6 +10,10 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import lombok.extern.slf4j.Slf4j;
+import org.com.techsalesmanagerclient.client.Client;
+import org.com.techsalesmanagerclient.client.Request;
+import org.com.techsalesmanagerclient.client.Response;
+import org.com.techsalesmanagerclient.enums.RequestType;
 
 import java.io.IOException;
 import java.util.*;
@@ -63,7 +67,7 @@ public class UserWorkController {
 
     private final ObjectMapper mapper = new ObjectMapper();
     private final ObservableList<Map<String, Object>> users = FXCollections.observableArrayList();
-    private final NettyClient nettyClient = NettyClient.getInstance();
+
     private final WorkWithScenes workWithScenes = new WorkWithScenes();
     private final List<String> expectedKeys = Arrays.asList("id", "name", "surname", "username", "email", "password", "role");
 
@@ -71,7 +75,7 @@ public class UserWorkController {
     }
 
     @FXML
-    public void initialize() throws IOException, TimeoutException {
+    public void initialize() throws IOException, TimeoutException, ClassNotFoundException {
 
 
         // Настройка CellValueFactory для каждой колонки
@@ -123,13 +127,12 @@ public class UserWorkController {
 
 
 
-        JsonMessage request = new JsonMessage();
-        request.setCommand("get_users");
-        request.addData("command","get_users");
+        Request request = new Request(RequestType.GET_ALL_USERS,"");
 
-        JsonMessage response = nettyClient.sendRequest(request);
+
+        Response response = Client.send(request);
         log.info(response.toString());
-        updateTableView(extractUsersFromJsonMessage(response));
+        //updateTableView(extractUsersFromJsonMessage(response));
 
     }
 
@@ -144,22 +147,21 @@ public class UserWorkController {
     }
 
     @FXML
-    void handleSearch(ActionEvent event) throws IOException, TimeoutException {
+    void handleSearch(ActionEvent event) throws IOException, TimeoutException, ClassNotFoundException {
 
         Long id = Long.valueOf(searchField.getText());
 
-        JsonMessage request = new JsonMessage();
-        request.setCommand("search_user");
+        Map<String, Object> data = new HashMap<>();
+        Request request = new Request(RequestType.SEARCH_USER,id.toString());
+        Response response = Client.send(request);
 
-        request.addData("id", id);
-        JsonMessage response = nettyClient.sendRequest(request);
-        if (response.getCommand().equals("success")) {
+       /* if (response.getCommand().equals("success")) {
             clearAndFillTableWithSingleUser(response.getData());
             log.info(response.toString());
         }
         else {
             log.error(response.toString());
-        }
+        }*/
     }
 
     private void clearAndFillTableWithSingleUser(Map<String, Object> user) {
@@ -229,7 +231,7 @@ public class UserWorkController {
         return normalized;
     }
 
-    public List<Map<String, Object>> extractUsersFromJsonMessage(JsonMessage message) {
+   /* public List<Map<String, Object>> extractUsersFromJsonMessage(JsonMessage message) {
         if (!"users".equals(message.getCommand())) {
             log.error("Invalid command: expected 'users', got '{}'", message.getCommand());
             throw new IllegalArgumentException("Invalid command: " + message.getCommand());
@@ -271,7 +273,7 @@ public class UserWorkController {
             log.error("Failed to parse users from JsonMessage: {}", e.getMessage(), e);
             throw new IllegalArgumentException("Failed to parse users: " + e.getMessage(), e);
         }
-    }
+    }*/
 
     private void showAlert(String title, String content) {
         log.error("Showing alert: {} - {}", title, content);
