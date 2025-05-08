@@ -19,6 +19,7 @@ import org.jetbrains.annotations.NotNull;
 import org.com.techsalesmanagerclient.client.Client;
 
 import java.io.IOException;
+import java.sql.ClientInfoStatus;
 import java.util.*;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
@@ -160,7 +161,9 @@ public class UserCrudController {
 
         Response response = Client.send(request);
         log.info(response.toString());
-        //updateTableView(extractUsersFromRequest(response));
+        List<User> users = JsonUtils.fromJson(response.getBody(),List.class);
+
+        updateTableView(users);
 
       /* // Request response = nettyClient.sendRequest(message);
         List<Map<String, Object>> response = nettyClient.sendListRequest(message);

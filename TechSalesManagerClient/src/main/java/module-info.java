@@ -21,6 +21,7 @@ module org.com.techsalesmanagerclient {
     requires org.slf4j;
     requires annotations;
     requires java.desktop;
+    requires java.sql;
 
     opens org.com.techsalesmanagerclient to javafx.fxml;
     exports org.com.techsalesmanagerclient;

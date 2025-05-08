@@ -54,7 +54,7 @@ public class ServerHandler implements Runnable {
         try {
             handler.invoke(findController(handler), writer, request);
         } catch (RuntimeException | IllegalAccessException | InvocationTargetException e) {
-            System.out.println(e.getMessage());
+            System.out.println("Опять короче фигня какая то");
             sendError(writer, "Error executing command: " + e.getMessage());
         }
     }

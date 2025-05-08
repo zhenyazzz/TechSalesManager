@@ -1,7 +1,6 @@
 package org.com.techsalesmanagerserver.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.com.techsalesmanagerserver.enumeration.ResponseStatus;
@@ -19,6 +18,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
+    private final PasswordService passwordService;
 
     public Response authenticate(Request authenticateRequest) throws JsonProcessingException {
         LoginForm authorizationForm = JsonUtils.fromJson(authenticateRequest.getBody(), LoginForm.class);
@@ -26,8 +26,8 @@ public class UserService {
 
         Optional<User> userOptional = userRepository.findByUsername(authorizationForm.getLogin());
         Response response = new Response();
-        // еще проверку пароля наверное можно сюда добавить в условие
-        if (userOptional.isPresent() && passwordMatches(userOptional.get().getPassword(), authorizationForm.getPassword())) {
+
+        if (userOptional.isPresent() && passwordService.matches(authorizationForm.getPassword(), userOptional.get().getPassword())) {
             response.setStatus(ResponseStatus.Ok);
             response.setBody(JsonUtils.toJson(new LoginResult(userOptional.get().getId(), userOptional.get().getRole())));
             log.info("User found: {}", userOptional.get().getUsername());
@@ -38,19 +38,6 @@ public class UserService {
         }
 
         return response;
-    }
-
-    // Метод для проверки пароля (адаптируйте под вашу систему хеширования)
-    private boolean passwordMatches(String storedHash, String rawPassword) {
-
-        log.info("Attempting to check the password: {}  {}", rawPassword,storedHash);
-
-        if (rawPassword.equals(storedHash)) {
-            return true;
-        }
-        else return false;
-        //потом сменить
-        //return BCrypt.checkpw(rawPassword, storedHash);
     }
 
     public Response findAll() throws JsonProcessingException {
@@ -101,7 +88,7 @@ public class UserService {
         user.setSurname(singUpForm.getSurname());
         user.setUsername(singUpForm.getNickname());
         user.setEmail(singUpForm.getEmail());
-        user.setPassword(singUpForm.getPassword());
+        user.setPassword(passwordService.encode(singUpForm.getPassword()));
         user.setRole(Role.CUSTOMER);
 
         User savedUser = userRepository.save(user);
@@ -135,6 +122,7 @@ public class UserService {
         User user = JsonUtils.fromJson(updateRequest.getBody(), User.class);
         log.info("Updating user: {}", user);
         if (userRepository.findById(user.getId()).isPresent()) {
+            user.setPassword(passwordService.encode(user.getPassword()));
             User updatedUser = userRepository.save(user);
             log.info("user updated: {}", updatedUser);
             return new Response(ResponseStatus.Ok, JsonUtils.toJson(updatedUser));
@@ -150,7 +138,7 @@ public class UserService {
         if (userRepository.findByUsername(user.getUsername()).isPresent()) {
             return new Response(ResponseStatus.ERROR, "Пользователь уже существует");
         }
-
+        user.setPassword(passwordService.encode(user.getPassword()));
         return new Response(ResponseStatus.Ok,JsonUtils.toJson(userRepository.save(user)));
     }
 
