@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.com.techsalesmanagerserver.enumeration.RequestType;
 import org.com.techsalesmanagerserver.server.JsonUtils;
 import org.com.techsalesmanagerserver.server.Request;
+import org.com.techsalesmanagerserver.server.Response;
 import org.com.techsalesmanagerserver.service.UserService;
 import org.springframework.stereotype.Component;
 
@@ -20,23 +21,24 @@ public class AuthController implements Controller{
     //авторизация/регистрация
     @Command(RequestType.AUTHORIZATION)
     public void handleLogin(PrintWriter writer, Request request) throws JsonProcessingException {
-        writer.println(userService.authenticate(request));
+        writer.println(JsonUtils.toJson(userService.authenticate(request)));
     }
 
     @Command(RequestType.REGISTRATION)
     public void handleRegister(PrintWriter writer, Request request) throws JsonProcessingException {
-        writer.println(userService.register(request));
+        System.out.println(request);
+        writer.println(JsonUtils.toJson(userService.register(request)));
     }
 
     //круд пользователя
     @Command(RequestType.GET_ALL_CUSTOMERS)
     public void handleGet(PrintWriter writer, Request request) throws JsonProcessingException {
-        writer.println(userService.findAll());
+        writer.println(JsonUtils.toJson(userService.findAll()));
     }
 
     @Command(RequestType.CREATE_USER)
     public void handleCreate(PrintWriter writer, Request request) throws JsonProcessingException {
-        writer.println(userService.createUser(request));
+        writer.println(JsonUtils.toJson(userService.createUser(request)));
     }
 
     @Command(RequestType.DELETE_USER)

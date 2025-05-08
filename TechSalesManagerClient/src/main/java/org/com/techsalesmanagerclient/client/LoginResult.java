@@ -8,7 +8,7 @@ import java.io.Serializable;
 
 @Data
 public class LoginResult implements Serializable {
-    private int id;
+    private Long id;
     private Role role;
 
 }

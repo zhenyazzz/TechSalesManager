@@ -77,8 +77,8 @@ public class LogInController {
                     System.out.println("admin");
                     workWithScenes.loadScene("/org/com/techsalesmanagerclient/Admin_Menu.fxml", signUpButton);
                 } else if (result.getRole().equals(Role.CUSTOMER)) {
-                    System.out.println("user");
-                    workWithScenes.loadScene("/org/com/techsalesmanagerclient/User_Menu.fxml", signUpButton);
+                    System.out.println("customer");
+                    workWithScenes.loadScene("/org/com/techsalesmanagerclient/User_menu.fxml", signUpButton);
                 }
                 else {
                     System.out.println(response);

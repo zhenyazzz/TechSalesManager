@@ -36,7 +36,8 @@ public class EmailVerificationController{
         signUpSignUpButton.setOnAction(action -> {
             System.out.println(verificationNumber);
             if (Integer.parseInt(signUpNickname.getText()) == verificationNumber) {
-                workWithScenes.loadScene("/org/com/techsalesmanagerclient/controller/User_Menu.java", signUpSignUpButton);
+                //workWithScenes.loadScene("/org/com/techsalesmanagerclient/controller/User_Menu.java", signUpSignUpButton);
+                workWithScenes.loadScene("/org/com/techsalesmanagerclient/logIn.fxml", signUpSignUpButton);
             }
         });
     }

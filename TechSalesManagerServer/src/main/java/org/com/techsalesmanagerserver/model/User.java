@@ -14,7 +14,7 @@ import java.util.List;
 @Table(name = "users")
 public class User {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String name;
@@ -24,19 +24,18 @@ public class User {
     private String password;
 
     @Enumerated(EnumType.STRING)
-    @Column(columnDefinition = "varchar(255) default 'CUSTOMER'")
-    @Builder.Default
-    private Role role = Role.CUSTOMER;
+    private Role role;
 
     @OneToMany(mappedBy = "user")
     private List<Order> orders;
 
-    public User( String name, String surname, String username, String email, String password) {
+    public User( String name, String surname, String username, String email, String password,Role role) {
 
         this.name = name;
         this.surname = surname;
         this.username = username;
         this.email = email;
         this.password = password;
+        this.role = role;
     }
 }

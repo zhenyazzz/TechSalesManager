@@ -1,6 +1,8 @@
 package org.com.techsalesmanagerclient.client;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+
 import java.io.*;
 import java.net.Socket;
 
@@ -35,8 +37,15 @@ public class Client {
         }
     }
 
-    public static Response send(Request request) throws IOException, ClassNotFoundException {
-        outStream.println(JsonUtils.toJson(request));
-        return JsonUtils.fromJson(inStream.readLine(), Response.class);
+    public static Response send(Request request)  {
+        try {
+            outStream.println(JsonUtils.toJson(request));
+            return JsonUtils.fromJson(inStream.readLine(), Response.class);
+
+        } catch (IOException e) {
+            System.out.println("Can't send request" + e.getMessage());
+            throw new RuntimeException(e);
+        }
+
     }
 }

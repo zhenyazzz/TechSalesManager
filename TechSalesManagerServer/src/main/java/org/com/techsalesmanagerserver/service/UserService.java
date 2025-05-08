@@ -5,6 +5,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.com.techsalesmanagerserver.enumeration.ResponseStatus;
+import org.com.techsalesmanagerserver.model.Role;
 import org.com.techsalesmanagerserver.model.User;
 import org.com.techsalesmanagerserver.repository.UserRepository;
 import org.com.techsalesmanagerserver.server.*;
@@ -20,7 +21,7 @@ public class UserService {
     private final UserRepository userRepository;
 
     public Response authenticate(Request authenticateRequest) throws JsonProcessingException {
-        AuthorizationForm authorizationForm = JsonUtils.fromJson(authenticateRequest.getBody(), AuthorizationForm.class);
+        LoginForm authorizationForm = JsonUtils.fromJson(authenticateRequest.getBody(), LoginForm.class);
         log.info("Attempting to find user by username: {}", authorizationForm.getLogin());
 
         Optional<User> userOptional = userRepository.findByUsername(authorizationForm.getLogin());
@@ -28,7 +29,7 @@ public class UserService {
         // еще проверку пароля наверное можно сюда добавить в условие
         if (userOptional.isPresent() && passwordMatches(userOptional.get().getPassword(), authorizationForm.getPassword())) {
             response.setStatus(ResponseStatus.Ok);
-            response.setBody(JsonUtils.toJson(new AuthorizationResult(userOptional.get().getId(), userOptional.get().getRole())));
+            response.setBody(JsonUtils.toJson(new LoginResult(userOptional.get().getId(), userOptional.get().getRole())));
             log.info("User found: {}", userOptional.get().getUsername());
         } else {
             response.setStatus(ResponseStatus.ERROR);
@@ -68,6 +69,7 @@ public class UserService {
     }
 
     public Response findById(Long id) throws JsonProcessingException {
+        System.out.println("igopseigesopug");
         log.info("Fetching user with id: {}", id);
         Optional<User> userOptional = userRepository.findById(id);
 
@@ -84,31 +86,36 @@ public class UserService {
         return response;
     }
 
-    @Transactional
     public Response register(Request registerRequest) throws JsonProcessingException {
+        System.out.println("igeoge");
         SingUpForm singUpForm = JsonUtils.fromJson(registerRequest.getBody(), SingUpForm.class);
+
         log.info("Saving user: {}", singUpForm.getNickname());
 
         if (userRepository.findByUsername(singUpForm.getNickname()).isPresent()) {
-            return new Response(ResponseStatus.ERROR, "Плдьзователь уже существует");
+            return new Response(ResponseStatus.ERROR, "Пользователь уже существует");
         }
-        User savedUser = userRepository.save(
-                new User(singUpForm.getName(),
-                        singUpForm.getSurname(),
-                        singUpForm.getNickname(),
-                        singUpForm.getEmail(),
-                        singUpForm.getPassword()));
-        return new Response(ResponseStatus.Ok, JsonUtils.toJson(
-                new SingUpResult(
-                        savedUser.getId(),
-                        savedUser.getName(),
-                        savedUser.getSurname(),
-                        savedUser.getUsername(),
-                        savedUser.getEmail(),
-                        savedUser.getPassword(),
-                        savedUser.getRole()
-                )
-        ));
+
+        User user =  new User();
+        user.setName(singUpForm.getName());
+        user.setSurname(singUpForm.getSurname());
+        user.setUsername(singUpForm.getNickname());
+        user.setEmail(singUpForm.getEmail());
+        user.setPassword(singUpForm.getPassword());
+        user.setRole(Role.CUSTOMER);
+
+        User savedUser = userRepository.save(user);
+
+
+        SingUpResult singUpResult = new SingUpResult(
+                savedUser.getId(),
+                savedUser.getName(),
+                savedUser.getSurname(),
+                savedUser.getUsername(),
+                savedUser.getEmail(),
+                savedUser.getPassword(),
+                savedUser.getRole());
+        return new Response(ResponseStatus.Ok,JsonUtils.toJson(singUpResult));
     }
 
     public Response deleteById(Request deleteRequest) throws JsonProcessingException {

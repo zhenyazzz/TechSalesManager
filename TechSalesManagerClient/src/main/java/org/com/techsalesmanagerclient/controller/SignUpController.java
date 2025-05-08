@@ -81,7 +81,7 @@ public class SignUpController implements SignUpInformation {
 
             System.out.println("Отправка данных на сервер ");
             try {
-                Request request = new Request(RequestType.AUTHORIZATION, JsonUtils.toJson(singUpForm));
+                Request request = new Request(RequestType.REGISTRATION, JsonUtils.toJson(singUpForm));
 
                 Response response =  Client.send(request);
 
@@ -90,7 +90,7 @@ public class SignUpController implements SignUpInformation {
                     workWithScenes.loadScene("/org/com/techsalesmanagerclient/emailVerification.fxml", signUpLogInButton);
                 }
 
-            } catch (IOException | ClassNotFoundException e) {
+            } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         });

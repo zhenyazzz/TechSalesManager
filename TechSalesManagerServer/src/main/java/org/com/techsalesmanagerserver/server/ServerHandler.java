@@ -8,6 +8,7 @@ import org.com.techsalesmanagerserver.enumeration.RequestType;
 import org.com.techsalesmanagerserver.enumeration.ResponseStatus;
 
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.Socket;
 import java.util.HashMap;
@@ -52,7 +53,8 @@ public class ServerHandler implements Runnable {
     private void invokeHandler(Method handler, PrintWriter writer, Request request) throws JsonProcessingException {
         try {
             handler.invoke(findController(handler), writer, request);
-        } catch (Exception e) {
+        } catch (RuntimeException | IllegalAccessException | InvocationTargetException e) {
+            System.out.println(e.getMessage());
             sendError(writer, "Error executing command: " + e.getMessage());
         }
     }
