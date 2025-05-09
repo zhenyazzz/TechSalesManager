@@ -10,11 +10,13 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.com.techsalesmanagerclient.client.JsonUtils;
 import org.com.techsalesmanagerclient.client.Request;
 import org.com.techsalesmanagerclient.client.Response;
 import org.com.techsalesmanagerclient.enums.RequestType;
+import org.com.techsalesmanagerclient.model.User;
 import org.jetbrains.annotations.NotNull;
 import org.com.techsalesmanagerclient.client.Client;
 
@@ -43,31 +45,31 @@ public class UserCrudController {
     private Button updateButton;
 
     @FXML
-    private TableView<Map<String, Object>> userTable;
+    private TableView<User> userTable;
 
     @FXML
     private ComboBox<String> roleComboBox;
 
     @FXML
-    private TableColumn<Map<String, Object>, Number> idColumn;
+    private TableColumn<User, Number> idColumn;
 
     @FXML
-    private TableColumn<Map<String, Object>, String> nameColumn;
+    private TableColumn<User, String> nameColumn;
 
     @FXML
-    private TableColumn<Map<String, Object>, String> surnameColumn;
+    private TableColumn<User, String> surnameColumn;
 
     @FXML
-    private TableColumn<Map<String, Object>, String> usernameColumn;
+    private TableColumn<User, String> usernameColumn;
 
     @FXML
-    private TableColumn<Map<String, Object>, String> emailColumn;
+    private TableColumn<User, String> emailColumn;
 
     @FXML
-    private TableColumn<Map<String, Object>, String> passwordColumn;
+    private TableColumn<User, String> passwordColumn;
 
     @FXML
-    private TableColumn<Map<String, Object>, String> roleColumn;
+    private TableColumn<User, String> roleColumn;
 
     @FXML
     private TextField idField;
@@ -88,7 +90,7 @@ public class UserCrudController {
     private TextField passwordField;
 
     private final ObjectMapper mapper = new ObjectMapper();
-    private final ObservableList<Map<String, Object>> users = FXCollections.observableArrayList();
+    private final ObservableList<User> users = FXCollections.observableArrayList();
    
     private final WorkWithScenes workWithScenes = new WorkWithScenes();
     private final List<String> expectedKeys = Arrays.asList("id", "name", "surname", "username", "email", "password", "role");
@@ -101,7 +103,7 @@ public class UserCrudController {
         roleComboBox.getItems().add("CUSTOMER");
         roleComboBox.getItems().add("ADMIN");
 
-        // Настройка CellValueFactory для каждой колонки
+        /*// Настройка CellValueFactory для каждой колонки
         idColumn.setCellValueFactory(cellData -> {
             Object value = cellData.getValue().get("id");
             if (value instanceof Number) {
@@ -146,16 +148,24 @@ public class UserCrudController {
         roleColumn.setCellValueFactory(cellData -> {
             Object value = cellData.getValue().get("role");
             return new SimpleObjectProperty<>(value != null ? value.toString() : null);
-        });
+        });*/
+
+        idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
+        nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
+        surnameColumn.setCellValueFactory(new PropertyValueFactory<>("surname"));
+        usernameColumn.setCellValueFactory(new PropertyValueFactory<>("username"));
+        emailColumn.setCellValueFactory(new PropertyValueFactory<>("email"));
+        roleColumn.setCellValueFactory(new PropertyValueFactory<>("role"));
+        passwordColumn.setCellValueFactory(new PropertyValueFactory<>("password"));
 
         // Добавляем слушатель для выбора записи в TableView
-        userTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+     /*   userTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
             if (newSelection != null) {
                 populateFields(newSelection);
             } else {
                 clearInputFields();
             }
-        });
+        });*/
 
         Request request = new Request(RequestType.GET_ALL_USERS,"");
 
@@ -298,15 +308,16 @@ public class UserCrudController {
     }
 
 
-    private void updateTableView(List<Map<String, Object>> response) {
-        log.info("Updating TableView with {} items", response.size());
+    private void updateTableView(List<User> users) {
+        /*log.info("Updating TableView with {} items", response.size());
         List<Map<String, Object>> normalizedList = response.stream().map(this::normalizeMap).collect(Collectors.toList());
         Platform.runLater(() -> {
             users.clear();
             users.addAll(normalizedList);
             log.debug("TableView updated with: {}", normalizedList);
-        });
-        userTable.setItems(users);
+        });*/
+        ObservableList<User> observableNames = FXCollections.observableArrayList(users);
+        userTable.setItems(observableNames);
     }
 
     private Map<String, Object> normalizeMap(Map<String, Object> input) {

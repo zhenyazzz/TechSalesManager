@@ -44,18 +44,18 @@ public class AuthController implements Controller{
 
     @Command(RequestType.DELETE_USER)
     public void handleDelete(PrintWriter writer, Request request) throws JsonProcessingException {
-        writer.println(userService.deleteById(request));
+        writer.println(JsonUtils.toJson(userService.deleteById(request)));
     }
 
     @Command(RequestType.UPDATE_USER)
     public void handleUpdate(PrintWriter writer, Request request) throws JsonProcessingException {
         log.info("Received command: {}", request.getType());
-        writer.println(userService.updateUser(request));
+        writer.println(JsonUtils.toJson(userService.updateUser(request)));
         log.info("user updated");
     }
 
     @Command(RequestType.SEARCH_USER)
     public void handleFind(PrintWriter writer, Request request) throws JsonProcessingException {
-        writer.println(userService.findById(JsonUtils.fromJson(request.getBody(), Long.class)));
+        writer.println(JsonUtils.toJson(userService.findById(JsonUtils.fromJson(request.getBody(), Long.class))));
     }
 }
