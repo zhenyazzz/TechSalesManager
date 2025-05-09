@@ -74,7 +74,6 @@ public class UserService {
     }
 
     public Response register(Request registerRequest) throws JsonProcessingException {
-        System.out.println("igeoge");
         SingUpForm singUpForm = JsonUtils.fromJson(registerRequest.getBody(), SingUpForm.class);
 
         log.info("Saving user: {}", singUpForm.getNickname());
