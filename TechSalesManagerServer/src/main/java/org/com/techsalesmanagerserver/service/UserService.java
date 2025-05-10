@@ -199,13 +199,7 @@ public class UserService {
         }
     }
 
-    /**
-     * Фильтрует пользователя по email, указанному в запросе.
-     *
-     * @param request Запрос с типом FILTER_USER_BY_EMAIL и телом в формате email
-     * @return Ответ с пользователем или ошибкой
-     * @throws JsonProcessingException Если произошла ошибка сериализации/десериализации
-     */
+
     public Response filterByEmail(Request request) throws JsonProcessingException {
         log.info("Filtering users by email substring: {}", request.getBody());
         try {
@@ -213,7 +207,7 @@ public class UserService {
             String substring = JsonUtils.fromJson(request.getBody(), String.class);
             if (substring == null || substring.trim().isEmpty()) {
                 log.error("Email substring is null or empty");
-                return new Response(ResponseStatus.ERROR, "Подстрока email не может быть пустой");
+                return findAll();
             }
 
             List<User> users = userRepository.findByEmailContainingIgnoreCase(substring.trim());

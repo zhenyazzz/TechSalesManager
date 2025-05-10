@@ -146,8 +146,9 @@ public class UserFilterService {
         }
 
         if (substring == null || substring.trim().isEmpty()) {
-            log.error("Email substring is null or empty");
-            throw new IllegalArgumentException("Пожалуйста, введите значение для фильтра");
+            Response response = Client.send(request);
+            log.info("Filter response for email substring: {}", response);
+            return response;
         }
 
         // Валидация подстроки (только буквы, цифры, точки, дефисы)
