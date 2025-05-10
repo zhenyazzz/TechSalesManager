@@ -19,6 +19,7 @@ import org.com.techsalesmanagerclient.enums.RequestType;
 import org.com.techsalesmanagerclient.enums.ResponseStatus;
 import org.com.techsalesmanagerclient.model.POJO_User;
 import org.com.techsalesmanagerclient.model.User;
+import org.com.techsalesmanagerclient.service.UserFilterService;
 
 import java.io.IOException;
 import java.util.*;
@@ -27,6 +28,9 @@ import java.util.stream.Collectors;
 
 @Slf4j
 public class UserWorkController {
+
+    @FXML
+    public ComboBox<String> filterComboBox;
 
     @FXML
     private TableColumn<POJO_User, Number> idColumn;
@@ -65,9 +69,6 @@ public class UserWorkController {
     private TextField searchField;
 
     @FXML
-    private ComboBox<?> sortComboBox;
-
-    @FXML
     private TableView<POJO_User> userTable;
 
     private final ObjectMapper mapper = new ObjectMapper();
@@ -81,7 +82,8 @@ public class UserWorkController {
 
     @FXML
     public void initialize() throws IOException, TimeoutException, ClassNotFoundException {
-
+        filterComboBox.getItems().add("По ID");
+        filterComboBox.getItems().add("По почте");
 
         // Настройка столбцов
         idColumn.setCellValueFactory(cellData -> cellData.getValue().idProperty());
@@ -125,7 +127,19 @@ public class UserWorkController {
 
     @FXML
     void handleFilterAndSort(ActionEvent event) {
-
+        try {
+            String filterType = filterComboBox.getValue();
+            String filterValue = filterField.getText();
+            Response response = UserFilterService.filter(filterType, filterValue);
+            if (response.getStatus() == ResponseStatus.Ok) {
+                clearAndFillTableWithResponse(response);
+            } else {
+                Platform.runLater(() -> showAlert("Error", "Не удалось выполнить фильтрацию: " + response.getBody()));
+            }
+        } catch (Exception e) {
+            log.error("Failed to perform filter", e);
+            Platform.runLater(() -> showAlert("Error", "Ошибка при фильтрации: " + e.getMessage()));
+        }
     }
 
     @FXML
@@ -219,50 +233,6 @@ public class UserWorkController {
         return normalized;
     }
 
-   /* public List<Map<String, Object>> extractUsersFromJsonMessage(JsonMessage message) {
-        if (!"users".equals(message.getCommand())) {
-            log.error("Invalid command: expected 'users', got '{}'", message.getCommand());
-            throw new IllegalArgumentException("Invalid command: " + message.getCommand());
-        }
-
-        Object usersData = message.getData().get("users");
-        if (usersData == null) {
-            log.warn("No 'users' key found in message data: {}", message);
-            return new ArrayList<>();
-        }
-
-        try {
-            if (usersData instanceof String) {
-                // Если данные пришли как JSON-строка
-                List<Map<String, Object>> userList = mapper.readValue(
-                        (String) usersData,
-                        mapper.getTypeFactory().constructCollectionType(List.class, Map.class)
-                );
-                log.info("Extracted {} users from JSON string", userList.size());
-                return userList;
-            } else if (usersData instanceof List) {
-                // Если данные уже десериализованы как List<Map>
-                List<Map<String, Object>> userList = mapper.convertValue(
-                        usersData,
-                        new TypeReference<List<Map<String, Object>>>() {}
-                );
-                log.info("Extracted {} users from JsonMessage", userList.size());
-                return userList;
-            } else {
-                // Если данные пришли как объект (Map)
-                log.warn("Unexpected data format for 'users': expected List or String, got {}", usersData.getClass());
-                Map<String, Object> singleUser = mapper.convertValue(usersData, new TypeReference<Map<String, Object>>() {});
-                List<Map<String, Object>> userList = new ArrayList<>();
-                userList.add(singleUser);
-                log.info("Converted single user object to list: {}", userList);
-                return userList;
-            }
-        } catch (Exception e) {
-            log.error("Failed to parse users from JsonMessage: {}", e.getMessage(), e);
-            throw new IllegalArgumentException("Failed to parse users: " + e.getMessage(), e);
-        }
-    }*/
-
     private void showAlert(String title, String content) {
         log.error("Showing alert: {} - {}", title, content);
         Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -270,5 +240,39 @@ public class UserWorkController {
         alert.setHeaderText(null);
         alert.setContentText(content);
         alert.showAndWait();
+    }
+
+    private void clearAndFillTableWithResponse(Response response) {
+        log.info("Clearing and filling TableView with response: {}", response.getBody());
+        Platform.runLater(() -> {
+            users.clear();
+            try {
+                // Проверяем, является ли ответ списком или одиночным пользователем
+                Object body = JsonUtils.fromJson(response.getBody(), Object.class);
+                if (body instanceof List) {
+                    List<Map<String, Object>> rawUsers = JsonUtils.fromJson(response.getBody(), List.class);
+                    for (Map<String, Object> rawUser : rawUsers) {
+                        users.add(new POJO_User(
+                                ((Number) rawUser.get("id")).longValue(),
+                                (String) rawUser.get("name"),
+                                (String) rawUser.get("surname"),
+                                (String) rawUser.get("username"),
+                                (String) rawUser.get("email"),
+                                (String) rawUser.get("password"),
+                                (String) rawUser.get("role")
+                        ));
+                    }
+                } else {
+                    // Одиночный пользователь
+                    User user = JsonUtils.fromJson(response.getBody(), User.class);
+                    users.add(new POJO_User(user));
+                }
+                userTable.setItems(users);
+                log.debug("TableView updated with users: {}", users);
+            } catch (JsonProcessingException e) {
+                log.error("Failed to parse users from response: {}", response.getBody(), e);
+                throw new RuntimeException("Failed to parse users", e);
+            }
+        });
     }
 }

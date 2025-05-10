@@ -11,8 +11,10 @@ import org.com.techsalesmanagerserver.repository.UserRepository;
 import org.com.techsalesmanagerserver.server.*;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeoutException;
 
 @Slf4j
 @Service
@@ -155,4 +157,79 @@ public class UserService {
     }
 
 
+    public Response filterById(Request request) throws JsonProcessingException {
+        log.info("Filtering users by ID range: {}", request.getBody());
+        try {
+            // Десериализация строки диапазона ID
+            String idRange = JsonUtils.fromJson(request.getBody(), String.class);
+            String[] range = idRange.split("-");
+            if (range.length != 2) {
+                log.error("Invalid ID range format: {}", idRange);
+                return new Response(ResponseStatus.ERROR, "Неверный формат диапазона ID: ожидается 'start-end'");
+            }
+
+            Long startId, endId;
+            try {
+                startId = Long.parseLong(range[0].trim());
+                endId = Long.parseLong(range[1].trim());
+            } catch (NumberFormatException e) {
+                log.error("Invalid number format in ID range: {}", idRange);
+                return new Response(ResponseStatus.ERROR, "Неверный формат чисел в диапазоне ID");
+            }
+
+            if (startId > endId) {
+                log.error("Start ID {} is greater than end ID {}", startId, endId);
+                return new Response(ResponseStatus.ERROR, "Начальный ID должен быть меньше или равен конечному");
+            }
+
+            List<User> users = userRepository.findByIdBetween(startId, endId);
+            for (User user : users) {
+                user.setOrders(null);
+            }
+            if (!users.isEmpty()) {
+                log.info("Found {} users in ID range: {}", users.size(), idRange);
+                return new Response(ResponseStatus.Ok, JsonUtils.toJson(users));
+            } else {
+                log.warn("No users found in ID range: {}", idRange);
+                return new Response(ResponseStatus.ERROR, "Пользователи не найдены");
+            }
+        } catch (Exception e) {
+            log.error("Failed to filter by ID range: {}", request.getBody(), e);
+            return new Response(ResponseStatus.ERROR, "Ошибка при фильтрации по диапазону ID: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Фильтрует пользователя по email, указанному в запросе.
+     *
+     * @param request Запрос с типом FILTER_USER_BY_EMAIL и телом в формате email
+     * @return Ответ с пользователем или ошибкой
+     * @throws JsonProcessingException Если произошла ошибка сериализации/десериализации
+     */
+    public Response filterByEmail(Request request) throws JsonProcessingException {
+        log.info("Filtering users by email substring: {}", request.getBody());
+        try {
+            // Десериализация подстроки email
+            String substring = JsonUtils.fromJson(request.getBody(), String.class);
+            if (substring == null || substring.trim().isEmpty()) {
+                log.error("Email substring is null or empty");
+                return new Response(ResponseStatus.ERROR, "Подстрока email не может быть пустой");
+            }
+
+            List<User> users = userRepository.findByEmailContainingIgnoreCase(substring.trim());
+            for (User user : users) {
+                user.setOrders(null);
+            }
+            if (!users.isEmpty()) {
+                log.info("Found {} users with email containing: {}", users.size(), substring);
+                return new Response(ResponseStatus.Ok, JsonUtils.toJson(users));
+            } else {
+                log.warn("No users found with email containing: {}", substring);
+                return new Response(ResponseStatus.ERROR, "Пользователи не найдены");
+            }
+        } catch (Exception e) {
+            log.error("Failed to filter by email substring: {}", request.getBody(), e);
+            return new Response(ResponseStatus.ERROR, "Ошибка при фильтрации по email: " + e.getMessage());
+        }
+    }
 }

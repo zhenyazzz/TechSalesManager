@@ -10,7 +10,9 @@ import org.com.techsalesmanagerserver.server.Response;
 import org.com.techsalesmanagerserver.service.UserService;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.concurrent.TimeoutException;
 
 @Slf4j
 @Component
@@ -57,5 +59,16 @@ public class AuthController implements Controller{
     @Command(RequestType.SEARCH_USER)
     public void handleFind(PrintWriter writer, Request request) throws JsonProcessingException {
         writer.println(JsonUtils.toJson(userService.findById(JsonUtils.fromJson(request.getBody(), Long.class))));
+    }
+
+    @Command(RequestType.FILTER_USER_BY_ID)
+    public void handleSearchById(PrintWriter writer, Request request) throws IOException, ClassNotFoundException, TimeoutException {
+        log.info("Handling FILTER_USER_BY_ID_RANGE request: {}", request);
+        writer.println(JsonUtils.toJson(userService.filterById(request)));
+    }
+    @Command(RequestType.FILTER_USER_BY_EMAIL)
+    public void handleSearchByEmail(PrintWriter writer, Request request) throws IOException, ClassNotFoundException, TimeoutException {
+        log.info("Handling FILTER_USER_BY_EMAIL request: {}", request);
+        writer.println(JsonUtils.toJson(userService.filterByEmail(request)));
     }
 }
