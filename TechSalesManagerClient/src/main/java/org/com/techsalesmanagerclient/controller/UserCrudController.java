@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -16,6 +17,9 @@ import org.com.techsalesmanagerclient.client.JsonUtils;
 import org.com.techsalesmanagerclient.client.Request;
 import org.com.techsalesmanagerclient.client.Response;
 import org.com.techsalesmanagerclient.enums.RequestType;
+import org.com.techsalesmanagerclient.enums.ResponseStatus;
+import org.com.techsalesmanagerclient.enums.Role;
+import org.com.techsalesmanagerclient.model.POJO_User;
 import org.com.techsalesmanagerclient.model.User;
 import org.jetbrains.annotations.NotNull;
 import org.com.techsalesmanagerclient.client.Client;
@@ -45,31 +49,31 @@ public class UserCrudController {
     private Button updateButton;
 
     @FXML
-    private TableView<User> userTable;
+    private TableView<POJO_User> userTable;
 
     @FXML
     private ComboBox<String> roleComboBox;
 
     @FXML
-    private TableColumn<User, Number> idColumn;
+    private TableColumn<POJO_User, Number> idColumn;
 
     @FXML
-    private TableColumn<User, String> nameColumn;
+    private TableColumn<POJO_User, String> nameColumn;
 
     @FXML
-    private TableColumn<User, String> surnameColumn;
+    private TableColumn<POJO_User, String> surnameColumn;
 
     @FXML
-    private TableColumn<User, String> usernameColumn;
+    private TableColumn<POJO_User, String> usernameColumn;
 
     @FXML
-    private TableColumn<User, String> emailColumn;
+    private TableColumn<POJO_User, String> emailColumn;
 
     @FXML
-    private TableColumn<User, String> passwordColumn;
+    private TableColumn<POJO_User, String> passwordColumn;
 
     @FXML
-    private TableColumn<User, String> roleColumn;
+    private TableColumn<POJO_User, String> roleColumn;
 
     @FXML
     private TextField idField;
@@ -90,7 +94,7 @@ public class UserCrudController {
     private TextField passwordField;
 
     private final ObjectMapper mapper = new ObjectMapper();
-    private final ObservableList<User> users = FXCollections.observableArrayList();
+    private final ObservableList<POJO_User> users = FXCollections.observableArrayList();
    
     private final WorkWithScenes workWithScenes = new WorkWithScenes();
     private final List<String> expectedKeys = Arrays.asList("id", "name", "surname", "username", "email", "password", "role");
@@ -103,75 +107,41 @@ public class UserCrudController {
         roleComboBox.getItems().add("CUSTOMER");
         roleComboBox.getItems().add("ADMIN");
 
-        /*// Настройка CellValueFactory для каждой колонки
-        idColumn.setCellValueFactory(cellData -> {
-            Object value = cellData.getValue().get("id");
-            if (value instanceof Number) {
-                return new SimpleObjectProperty<>((Number) value);
-            } else if (value == null) {
-                return new SimpleObjectProperty<>(null);
-            } else {
-                try {
-                    return new SimpleObjectProperty<>(Integer.parseInt(value.toString()));
-                } catch (NumberFormatException e) {
-                    log.warn("Invalid number format for id: {}", value);
-                    return new SimpleObjectProperty<>(null);
-                }
-            }
-        });
-
-        nameColumn.setCellValueFactory(cellData -> {
-            Object value = cellData.getValue().get("name");
-            return new SimpleObjectProperty<>(value != null ? value.toString() : null);
-        });
-
-        surnameColumn.setCellValueFactory(cellData -> {
-            Object value = cellData.getValue().get("surname");
-            return new SimpleObjectProperty<>(value != null ? value.toString() : null);
-        });
-
-        usernameColumn.setCellValueFactory(cellData -> {
-            Object value = cellData.getValue().get("username");
-            return new SimpleObjectProperty<>(value != null ? value.toString() : null);
-        });
-
-        emailColumn.setCellValueFactory(cellData -> {
-            Object value = cellData.getValue().get("email");
-            return new SimpleObjectProperty<>(value != null ? value.toString() : null);
-        });
-
-        passwordColumn.setCellValueFactory(cellData -> {
-            Object value = cellData.getValue().get("password");
-            return new SimpleObjectProperty<>(value != null ? value.toString() : null);
-        });
-
-        roleColumn.setCellValueFactory(cellData -> {
-            Object value = cellData.getValue().get("role");
-            return new SimpleObjectProperty<>(value != null ? value.toString() : null);
-        });*/
-
-        idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
-        nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
-        surnameColumn.setCellValueFactory(new PropertyValueFactory<>("surname"));
-        usernameColumn.setCellValueFactory(new PropertyValueFactory<>("username"));
-        emailColumn.setCellValueFactory(new PropertyValueFactory<>("email"));
-        roleColumn.setCellValueFactory(new PropertyValueFactory<>("role"));
-        passwordColumn.setCellValueFactory(new PropertyValueFactory<>("password"));
-
+        // Настройка столбцов
+        idColumn.setCellValueFactory(cellData -> cellData.getValue().idProperty());
+        nameColumn.setCellValueFactory(cellData -> cellData.getValue().nameProperty());
+        surnameColumn.setCellValueFactory(cellData -> cellData.getValue().surnameProperty());
+        usernameColumn.setCellValueFactory(cellData -> cellData.getValue().usernameProperty());
+        emailColumn.setCellValueFactory(cellData -> cellData.getValue().emailProperty());
+        passwordColumn.setCellValueFactory(cellData -> cellData.getValue().passwordProperty());
+        roleColumn.setCellValueFactory(cellData -> cellData.getValue().roleProperty());
+      
         // Добавляем слушатель для выбора записи в TableView
-     /*   userTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+        userTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
             if (newSelection != null) {
                 populateFields(newSelection);
             } else {
                 clearInputFields();
             }
-        });*/
+        });
 
         Request request = new Request(RequestType.GET_ALL_USERS,"");
 
         Response response = Client.send(request);
         log.info(response.toString());
-        List<User> users = JsonUtils.fromJson(response.getBody(),List.class);
+        List<Map<String, Object>> rawUsers=JsonUtils.fromJson(response.getBody(),List.class);
+        // Преобразование LinkedHashMap в POJO_User
+        for (Map<String, Object> rawUser : rawUsers) {
+            users.add(new POJO_User(
+                    ((Number) rawUser.get("id")).longValue(), // Преобразование id в Long
+                    (String) rawUser.get("name"),
+                    (String) rawUser.get("surname"),
+                    (String) rawUser.get("username"),
+                    (String) rawUser.get("email"),
+                    (String) rawUser.get("password"),
+                    (String) rawUser.get("role")
+            ));
+        }
 
         updateTableView(users);
 
@@ -185,17 +155,7 @@ public class UserCrudController {
 
     @FXML
     void handleSearch(ActionEvent event) throws IOException, TimeoutException, ClassNotFoundException {
-        Request request = new Request(RequestType.GET_ALL_USERS, "");
-
-
-        // Request response = nettyClient.sendRequest(message);
-        //List<Map<String, Object>> response = nettyClient.sendListRequest(message);
-        Response response = Client.send(request);
-
-        //updateTableView(extractUsersFromRequest(response));
-        userTable.setItems(users);
-        
-        
+        workWithScenes.loadScene("/org/com/techsalesmanagerclient/User_CRUD.fxml",createButton);
     }
 
 
@@ -208,7 +168,7 @@ public class UserCrudController {
         String password = passwordField.getText();
         String email = emailField.getText();
         String role = roleComboBox.getValue();
-        Request request = new Request(RequestType.CREATE_USER, "");
+
         Map<String, Object> data = new HashMap<>();
         data.put("name",name);
         data.put("surname",surname);
@@ -216,6 +176,10 @@ public class UserCrudController {
         data.put("email",email);
         data.put("password", password);
         data.put("role", role);
+
+
+        Request request = new Request(RequestType.CREATE_USER, mapToJson(data));
+
         Response response = Client.send(request);
         log.info(response.toString());
         workWithScenes.loadScene("/org/com/techsalesmanagerclient/User_CRUD.fxml",createButton);
@@ -224,58 +188,61 @@ public class UserCrudController {
 
     @FXML
     void handleDelete(ActionEvent event) {
-     /*   try {
-            // Получаем ID из поля ввода (заполняется при выборе записи в TableView)
+        try {
+            // Проверка, что пользователь выбран
+            if (userTable.getSelectionModel().getSelectedItem() == null) {
+                Platform.runLater(() -> showAlert("Warning", "Пожалуйста, выберите пользователя для удаления"));
+                return;
+            }
+
+            // Получаем ID из поля ввода
             String idText = idField.getText();
             if (idText == null || idText.isEmpty()) {
                 Platform.runLater(() -> showAlert("Warning", "Пожалуйста, выберите пользователя для удаления"));
                 return;
             }
 
-            int userId;
+            Long userId;
             try {
-                userId = Integer.parseInt(idText);
+                userId = Long.parseLong(idText);
             } catch (NumberFormatException e) {
                 log.error("Invalid ID format: {}", idText);
                 Platform.runLater(() -> showAlert("Error", "Неверный формат ID: " + idText));
                 return;
             }
 
-            // Создаём запрос на удаление
-            Request request = new Request(RequestType.DELETE_USER, JsonUtils.toJson(loginForm));
-            request.setCommand("delete_user");
-            data.put("id", userId);
+            // Создаём JSON с id (просто строка с числом)
+            String json = mapper.writeValueAsString(userId); // Преобразуем Long в строку, например "3"
+            Request request = new Request(RequestType.DELETE_USER, json);
             log.debug("Sending delete request: {}", request);
 
-            // Отправляем запрос на сервер
-            Request response = nettyClient.sendRequest(request);
-            log.debug("Received response: {}", response);
+            // Отправляем запрос
+            Response response = Client.send(request);
+            log.info("Delete response: {}", response);
 
-            // Обрабатываем ответ от сервера
-            if ("success".equals(response.getCommand())) {
-
-
-                // Удаляем из TableView
+            // Обрабатываем ответ
+            if (response.getStatus() == ResponseStatus.Ok) {
                 Platform.runLater(() -> {
-                    users.removeIf(user -> {
-                        Object id = user.get("id");
-                        return id != null && id.toString().equals(String.valueOf(userId));
-                    });
-                    log.info("Removed user with ID {} from TableView", userId);
+                    // Удаляем пользователя из TableView
+                    users.removeIf(user -> user.getId() != null && user.getId().equals(userId));
+                    // Явно обновляем TableView
+                    userTable.setItems(FXCollections.observableArrayList(users));
                     clearInputFields();
+                    log.info("Removed user with ID {} from TableView", userId);
+                    // Опционально: полная синхронизация с сервером
+                    try {
+                        handleSearch(event);
+                    } catch (Exception e) {
+                        log.error("Failed to refresh table after delete", e);
+                    }
                 });
-            } else if ("error".equals(response.getCommand())) {
-                String reason = response.getData().toString();
-                log.error("Server error: {}", reason);
-                Platform.runLater(() -> showAlert("Error", "Ошибка сервера: " + reason));
             } else {
-                log.error("Unexpected response command: {}", response.getCommand());
-                Platform.runLater(() -> showAlert("Error", "Неожиданный ответ от сервера: " + response.getCommand()));
+                Platform.runLater(() -> showAlert("Error", "Не удалось удалить пользователя: " + response.getBody()));
             }
         } catch (Exception e) {
-            log.error("Failed to delete user: {}", e.getMessage(), e);
+            log.error("Failed to delete user", e);
             Platform.runLater(() -> showAlert("Error", "Не удалось удалить пользователя: " + e.getMessage()));
-        }*/
+        }
     }
 
     @FXML
@@ -284,31 +251,78 @@ public class UserCrudController {
     }
 
     @FXML
-    void handleUpdate(ActionEvent event) throws IOException, TimeoutException, ClassNotFoundException {
-        Long id=Long.parseLong(idField.getText());
-        String name = nameField.getText();
-        String surname = surnameField.getText();
-        String username = usernameField.getText();
-        String password = passwordField.getText();
-        String email = emailField.getText();
-        String role = roleComboBox.getValue();
-        Map<String, Object> data = new HashMap<>();
+    void handleUpdate(ActionEvent event) {
+        try {
+            // Проверка, что пользователь выбран
+            if (userTable.getSelectionModel().getSelectedItem() == null) {
+                Platform.runLater(() -> showAlert("Warning", "Пожалуйста, выберите пользователя для обновления"));
+                return;
+            }
 
-        data.put("id",id);
-        data.put("name",name);
-        data.put("surname",surname);
-        data.put("username", username);
-        data.put("email",email);
-        data.put("password", password);
-        data.put("role", role);
-        Request request = new Request(RequestType.AUTHORIZATION, JsonUtils.toJson(data));
-        Response response = Client.send(request);
-        log.info(response.toString());
+            // Получаем ID из поля ввода
+            String idText = idField.getText();
+            if (idText == null || idText.isEmpty()) {
+                Platform.runLater(() -> showAlert("Warning", "Пожалуйста, выберите пользователя для обновления"));
+                return;
+            }
+
+            Long id;
+            try {
+                id = Long.parseLong(idText);
+            } catch (NumberFormatException e) {
+                log.error("Invalid ID format: {}", idText);
+                Platform.runLater(() -> showAlert("Error", "Неверный формат ID: " + idText));
+                return;
+            }
+
+            String name = nameField.getText();
+            String surname = surnameField.getText();
+            String username = usernameField.getText();
+            String password = passwordField.getText();
+            String email = emailField.getText();
+            String role = roleComboBox.getValue();
+
+            if (name.isEmpty() || surname.isEmpty() || username.isEmpty() || email.isEmpty() || password.isEmpty() || role == null) {
+                Platform.runLater(() -> showAlert("Warning", "Все поля должны быть заполнены"));
+                return;
+            }
+
+            Map<String, Object> data = new HashMap<>();
+            data.put("id", id);
+            data.put("name", name);
+            data.put("surname", surname);
+            data.put("username", username);
+            data.put("email", email);
+            data.put("password", password);
+            data.put("role", role);
+
+            Request request = new Request(RequestType.UPDATE_USER, mapToJson(data));
+            log.debug("Sending update request: {}", request);
+
+            Response response = Client.send(request);
+            log.info("Update response: {}", response);
+
+            if (response.getStatus() == ResponseStatus.Ok) {
+                Platform.runLater(() -> {
+                    clearInputFields();
+                    try {
+                        handleSearch(event); // Обновляем таблицу
+                    } catch (Exception e) {
+                        log.error("Failed to refresh table after update", e);
+                    }
+                });
+            } else {
+                Platform.runLater(() -> showAlert("Error", "Не удалось обновить пользователя: " + response.getBody()));
+            }
+        } catch (Exception e) {
+            log.error("Failed to update user", e);
+            Platform.runLater(() -> showAlert("Error", "Не удалось обновить пользователя: " + e.getMessage()));
+        }
         workWithScenes.loadScene("/org/com/techsalesmanagerclient/User_CRUD.fxml",createButton);
     }
 
 
-    private void updateTableView(List<User> users) {
+    private void updateTableView(List<POJO_User> users) {
         /*log.info("Updating TableView with {} items", response.size());
         List<Map<String, Object>> normalizedList = response.stream().map(this::normalizeMap).collect(Collectors.toList());
         Platform.runLater(() -> {
@@ -316,7 +330,7 @@ public class UserCrudController {
             users.addAll(normalizedList);
             log.debug("TableView updated with: {}", normalizedList);
         });*/
-        ObservableList<User> observableNames = FXCollections.observableArrayList(users);
+        ObservableList<POJO_User> observableNames = FXCollections.observableArrayList(users);
         userTable.setItems(observableNames);
     }
 
@@ -398,14 +412,14 @@ public class UserCrudController {
         }
     }*/
 
-    private void populateFields(Map<String, Object> user) {
-        idField.setText(user.get("id") != null ? user.get("id").toString() : "");
-        nameField.setText(user.get("name") != null ? user.get("name").toString() : "");
-        surnameField.setText(user.get("surname") != null ? user.get("surname").toString() : "");
-        usernameField.setText(user.get("username") != null ? user.get("username").toString() : "");
-        emailField.setText(user.get("email") != null ? user.get("email").toString() : "");
-        passwordField.setText(user.get("password") != null ? user.get("password").toString() : "");
-        roleComboBox.setValue(user.get("role") != null ? user.get("role").toString() : null);
+    private void populateFields(POJO_User user) {
+        idField.setText(user.getId() != null ? user.getId().toString() : "");
+        nameField.setText(user.getName() != null ? user.getName() : "");
+        surnameField.setText(user.getSurname() != null ? user.getSurname() : "");
+        usernameField.setText(user.getUsername() != null ? user.getUsername() : "");
+        emailField.setText(user.getEmail() != null ? user.getEmail() : "");
+        passwordField.setText(user.getPassword() != null ? user.getPassword() : "");
+        roleComboBox.setValue(user.getRole() != null ? user.getRole() : null);
         log.info("Populated fields with user data: {}", user);
     }
 
@@ -426,5 +440,17 @@ public class UserCrudController {
         alert.setHeaderText(null);
         alert.setContentText(content);
         alert.showAndWait();
+    }
+
+    public static String mapToJson(Map<String, Object> data) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            String json = mapper.writeValueAsString(data);
+            log.info("Converted Map to JSON: {}", json);
+            return json;
+        } catch (Exception e) {
+            log.error("Failed to convert Map to JSON: {}", data, e);
+            throw new RuntimeException("Failed to convert Map to JSON", e);
+        }
     }
 }

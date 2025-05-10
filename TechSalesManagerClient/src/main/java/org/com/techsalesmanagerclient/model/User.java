@@ -1,7 +1,9 @@
 package org.com.techsalesmanagerclient.model;
 
+import lombok.Data;
 import org.com.techsalesmanagerclient.enums.Role;
 
+@Data
 public class User {
     private Long id;
     private String name;
@@ -10,4 +12,7 @@ public class User {
     private String email;
     private String password;
     private Role role;
+
+
+
 }

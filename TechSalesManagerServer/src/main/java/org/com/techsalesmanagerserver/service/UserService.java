@@ -1,6 +1,7 @@
 package org.com.techsalesmanagerserver.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.com.techsalesmanagerserver.enumeration.ResponseStatus;
@@ -43,6 +44,9 @@ public class UserService {
     public Response findAll() throws JsonProcessingException {
         log.info("Fetching all users");
         List<User> users = userRepository.findAll();
+        for(User user : users) {
+            user.setOrders(null);
+        }
         return new Response(ResponseStatus.Ok, JsonUtils.toJson(users));
     }
 
@@ -73,6 +77,7 @@ public class UserService {
         return response;
     }
 
+    @Transactional
     public Response register(Request registerRequest) throws JsonProcessingException {
         SingUpForm singUpForm = JsonUtils.fromJson(registerRequest.getBody(), SingUpForm.class);
 
@@ -89,9 +94,14 @@ public class UserService {
         user.setEmail(singUpForm.getEmail());
         user.setPassword(passwordService.encode(singUpForm.getPassword()));
         user.setRole(Role.CUSTOMER);
+        user.setOrders(null);
+
+        System.out.println("user1");
+        System.out.println(user.toString());
 
         User savedUser = userRepository.save(user);
-
+        System.out.println("user2");
+        System.out.println(savedUser);
 
         SingUpResult singUpResult = new SingUpResult(
                 savedUser.getId(),
@@ -104,6 +114,7 @@ public class UserService {
         return new Response(ResponseStatus.Ok,JsonUtils.toJson(singUpResult));
     }
 
+    @Transactional
     public Response deleteById(Request deleteRequest) throws JsonProcessingException {
         Long id = JsonUtils.fromJson(deleteRequest.getBody(), Long.class);
         log.info("Deleting user with id: {}", id);
@@ -116,7 +127,7 @@ public class UserService {
         }
     }
 
-
+    @Transactional
     public Response updateUser(Request updateRequest) throws JsonProcessingException {
         User user = JsonUtils.fromJson(updateRequest.getBody(), User.class);
         log.info("Updating user: {}", user);
@@ -133,6 +144,8 @@ public class UserService {
 
     }
     public Response createUser(Request createRequest) throws JsonProcessingException {
+        System.out.println("createUser");
+        System.out.println(createRequest.getBody());
         User user = JsonUtils.fromJson(createRequest.getBody(),User.class);
         if (userRepository.findByUsername(user.getUsername()).isPresent()) {
             return new Response(ResponseStatus.ERROR, "Пользователь уже существует");

@@ -2,6 +2,7 @@ package org.com.techsalesmanagerserver.server;
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import lombok.extern.slf4j.Slf4j;
 import org.com.techsalesmanagerserver.controller.Command;
 import org.com.techsalesmanagerserver.controller.Controller;
 import org.com.techsalesmanagerserver.enumeration.RequestType;
@@ -15,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 public class ServerHandler implements Runnable {
     private final List<Controller> controllers;
     private final Map<RequestType, Method> commandMap = new HashMap<>();
@@ -54,6 +56,8 @@ public class ServerHandler implements Runnable {
         try {
             handler.invoke(findController(handler), writer, request);
         } catch (RuntimeException | IllegalAccessException | InvocationTargetException e) {
+            Throwable realException = e.getCause(); // Получаем настоящую ошибку
+            realException.printStackTrace();
             System.out.println("Опять короче фигня какая то");
             sendError(writer, "Error executing command: " + e.getMessage());
         }
