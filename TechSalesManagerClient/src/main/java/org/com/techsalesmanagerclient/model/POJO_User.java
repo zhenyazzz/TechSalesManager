@@ -22,7 +22,15 @@ public class POJO_User {
         this.role = new SimpleStringProperty(role);
     }
 
-
+    public POJO_User(User user) {
+        this.id = new SimpleLongProperty(user.getId());
+        this.name = new SimpleStringProperty(user.getName());
+        this.surname = new SimpleStringProperty(user.getSurname());
+        this.username = new SimpleStringProperty(user.getUsername());
+        this.email = new SimpleStringProperty(user.getEmail());
+        this.password = new SimpleStringProperty(user.getPassword());
+        this.role = new SimpleStringProperty(user.getRole().toString());
+    }
 
     public Long getId() {
         return id.get();

@@ -1,7 +1,10 @@
 package org.com.techsalesmanagerclient.model;
 
+import lombok.Builder;
 import lombok.Data;
 import org.com.techsalesmanagerclient.enums.Role;
+
+import java.util.List;
 
 @Data
 public class User {
@@ -12,6 +15,8 @@ public class User {
     private String email;
     private String password;
     private Role role;
+
+    private List<Object> orders=null;
 
 
 

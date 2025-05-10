@@ -1,5 +1,6 @@
 package org.com.techsalesmanagerclient.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import javafx.application.Platform;
@@ -11,9 +12,13 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import lombok.extern.slf4j.Slf4j;
 import org.com.techsalesmanagerclient.client.Client;
+import org.com.techsalesmanagerclient.client.JsonUtils;
 import org.com.techsalesmanagerclient.client.Request;
 import org.com.techsalesmanagerclient.client.Response;
 import org.com.techsalesmanagerclient.enums.RequestType;
+import org.com.techsalesmanagerclient.enums.ResponseStatus;
+import org.com.techsalesmanagerclient.model.POJO_User;
+import org.com.techsalesmanagerclient.model.User;
 
 import java.io.IOException;
 import java.util.*;
@@ -24,25 +29,25 @@ import java.util.stream.Collectors;
 public class UserWorkController {
 
     @FXML
-    private TableColumn<Map<String, Object>, Number> idColumn;
+    private TableColumn<POJO_User, Number> idColumn;
 
     @FXML
-    private TableColumn<Map<String, Object>, String> nameColumn;
+    private TableColumn<POJO_User, String> nameColumn;
 
     @FXML
-    private TableColumn<Map<String, Object>, String> surnameColumn;
+    private TableColumn<POJO_User, String> surnameColumn;
 
     @FXML
-    private TableColumn<Map<String, Object>, String> usernameColumn;
+    private TableColumn<POJO_User, String> usernameColumn;
 
     @FXML
-    private TableColumn<Map<String, Object>, String> emailColumn;
+    private TableColumn<POJO_User, String> emailColumn;
 
     @FXML
-    private TableColumn<Map<String, Object>, String> passwordColumn;
+    private TableColumn<POJO_User, String> passwordColumn;
 
     @FXML
-    private TableColumn<Map<String, Object>, String> roleColumn;
+    private TableColumn<POJO_User, String> roleColumn;
 
     @FXML
     public Button SearchButton;
@@ -63,10 +68,10 @@ public class UserWorkController {
     private ComboBox<?> sortComboBox;
 
     @FXML
-    private TableView<Map<String, Object>> userTable;
+    private TableView<POJO_User> userTable;
 
     private final ObjectMapper mapper = new ObjectMapper();
-    private final ObservableList<Map<String, Object>> users = FXCollections.observableArrayList();
+    private final ObservableList<POJO_User> users = FXCollections.observableArrayList();
 
     private final WorkWithScenes workWithScenes = new WorkWithScenes();
     private final List<String> expectedKeys = Arrays.asList("id", "name", "surname", "username", "email", "password", "role");
@@ -78,52 +83,15 @@ public class UserWorkController {
     public void initialize() throws IOException, TimeoutException, ClassNotFoundException {
 
 
-        // Настройка CellValueFactory для каждой колонки
-        idColumn.setCellValueFactory(cellData -> {
-            Object value = cellData.getValue().get("id");
-            if (value instanceof Number) {
-                return new SimpleObjectProperty<>((Number) value);
-            } else if (value == null) {
-                return new SimpleObjectProperty<>(null);
-            } else {
-                try {
-                    return new SimpleObjectProperty<>(Integer.parseInt(value.toString()));
-                } catch (NumberFormatException e) {
-                    log.warn("Invalid number format for id: {}", value);
-                    return new SimpleObjectProperty<>(null);
-                }
-            }
-        });
+        // Настройка столбцов
+        idColumn.setCellValueFactory(cellData -> cellData.getValue().idProperty());
+        nameColumn.setCellValueFactory(cellData -> cellData.getValue().nameProperty());
+        surnameColumn.setCellValueFactory(cellData -> cellData.getValue().surnameProperty());
+        usernameColumn.setCellValueFactory(cellData -> cellData.getValue().usernameProperty());
+        emailColumn.setCellValueFactory(cellData -> cellData.getValue().emailProperty());
+        passwordColumn.setCellValueFactory(cellData -> cellData.getValue().passwordProperty());
+        roleColumn.setCellValueFactory(cellData -> cellData.getValue().roleProperty());
 
-        nameColumn.setCellValueFactory(cellData -> {
-            Object value = cellData.getValue().get("name");
-            return new SimpleObjectProperty<>(value != null ? value.toString() : null);
-        });
-
-        surnameColumn.setCellValueFactory(cellData -> {
-            Object value = cellData.getValue().get("surname");
-            return new SimpleObjectProperty<>(value != null ? value.toString() : null);
-        });
-
-        usernameColumn.setCellValueFactory(cellData -> {
-            Object value = cellData.getValue().get("username");
-            return new SimpleObjectProperty<>(value != null ? value.toString() : null);
-        });
-
-        emailColumn.setCellValueFactory(cellData -> {
-            Object value = cellData.getValue().get("email");
-            return new SimpleObjectProperty<>(value != null ? value.toString() : null);
-        });
-
-        passwordColumn.setCellValueFactory(cellData -> {
-            Object value = cellData.getValue().get("password");
-            return new SimpleObjectProperty<>(value != null ? value.toString() : null);
-        });
-
-        roleColumn.setCellValueFactory(cellData -> {
-            Object value = cellData.getValue().get("role");
-            return new SimpleObjectProperty<>(value != null ? value.toString() : null);
-        });
 
 
 
@@ -132,7 +100,21 @@ public class UserWorkController {
 
         Response response = Client.send(request);
         log.info(response.toString());
-        //updateTableView(extractUsersFromJsonMessage(response));
+        List<Map<String, Object>> rawUsers= JsonUtils.fromJson(response.getBody(),List.class);
+        // Преобразование LinkedHashMap в POJO_User
+        for (Map<String, Object> rawUser : rawUsers) {
+            users.add(new POJO_User(
+                    ((Number) rawUser.get("id")).longValue(), // Преобразование id в Long
+                    (String) rawUser.get("name"),
+                    (String) rawUser.get("surname"),
+                    (String) rawUser.get("username"),
+                    (String) rawUser.get("email"),
+                    (String) rawUser.get("password"),
+                    (String) rawUser.get("role")
+            ));
+        }
+
+        updateTableView(users);
 
     }
 
@@ -155,36 +137,42 @@ public class UserWorkController {
         Request request = new Request(RequestType.SEARCH_USER,id.toString());
         Response response = Client.send(request);
 
-       /* if (response.getCommand().equals("success")) {
-            clearAndFillTableWithSingleUser(response.getData());
+        if (response.getStatus().equals(ResponseStatus.Ok)) {
+            clearAndFillTableWithSingleUser(response);
             log.info(response.toString());
         }
         else {
             log.error(response.toString());
-        }*/
+        }
     }
 
-    private void clearAndFillTableWithSingleUser(Map<String, Object> user) {
-        log.info("Clearing and filling TableView with single user: {}", user);
+    private void clearAndFillTableWithSingleUser(Response response) {
+       log.info("Clearing and filling TableView with single user: {}", response.getBody());
         Platform.runLater(() -> {
             users.clear();
-            Map<String, Object> normalizedUser = normalizeUser(user);
-            users.add(normalizedUser);
+           // Map<String, Object> normalizedUser = normalizeUser(user);
+            try {
+                User user=JsonUtils.fromJson(response.getBody(), User.class);
+                POJO_User pojo_user=new POJO_User(user);
+                users.add(pojo_user);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
             userTable.setItems(users);
             log.debug("TableView updated with single user: {}", users);
         });
     }
 
-    private void updateTableView(List<Map<String, Object>> response) {
-
-        log.info("Updating TableView with {} items", response.size());
+    private void updateTableView(List<POJO_User> users) {
+        /*log.info("Updating TableView with {} items", response.size());
         List<Map<String, Object>> normalizedList = response.stream().map(this::normalizeMap).collect(Collectors.toList());
         Platform.runLater(() -> {
             users.clear();
             users.addAll(normalizedList);
             log.debug("TableView updated with: {}", normalizedList);
-        });
-        userTable.setItems(users);
+        });*/
+        ObservableList<POJO_User> observableNames = FXCollections.observableArrayList(users);
+        userTable.setItems(observableNames);
     }
 
     private Map<String, Object> normalizeUser(Map<String, Object> input) {

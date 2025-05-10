@@ -23,6 +23,7 @@ module org.com.techsalesmanagerclient {
     requires java.desktop;
     requires java.sql;
 
+    opens org.com.techsalesmanagerclient.model to com.fasterxml.jackson.databind;
     opens org.com.techsalesmanagerclient to javafx.fxml;
     exports org.com.techsalesmanagerclient;
     opens org.com.techsalesmanagerclient.controller to javafx.fxml;
@@ -32,5 +33,6 @@ module org.com.techsalesmanagerclient {
     opens org.com.techsalesmanagerclient.client to javafx.fxml;
     exports org.com.techsalesmanagerclient.enums;
     opens org.com.techsalesmanagerclient.enums to javafx.fxml;
+    exports org.com.techsalesmanagerclient.model to com.fasterxml.jackson.databind;
 
 }
