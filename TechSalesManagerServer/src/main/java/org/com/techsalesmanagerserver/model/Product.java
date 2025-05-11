@@ -3,6 +3,7 @@ package org.com.techsalesmanagerserver.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -18,14 +19,17 @@ public class Product {
     private Long id;
 
     private String name;
+    private String description;
     private double price;
     private int stock;
 
     @ManyToOne
     private Category category;
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "product_image_id")
-    private ProductImage productImage;
+    @ManyToOne
+    @JoinColumn(name = "supplier_id")
+    private Supplier supplier;
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductImage> images = new ArrayList<>();
     @OneToMany(mappedBy = "product")
     private List<OrderItem> orderItems;
 
