@@ -372,7 +372,7 @@ public class ProductCrudController {
 
     @FXML
     void handleExit(ActionEvent event) {
-        workWithScenes.loadScene("/org/com/techsalesmanagerclient/User_Work_Menu.fxml", exitButton);
+        workWithScenes.loadScene("/org/com/techsalesmanagerclient/Product_Work_Menu.fxml", exitButton);
     }
 
     private void updateTableView(List<POJO_Product> products) {

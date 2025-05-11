@@ -51,13 +51,15 @@ public class ProductController implements Controller {
     @Command(RequestType.FILTER_PRODUCT_BY_ID)
     public void handleFilterById(PrintWriter writer, Request request) throws JsonProcessingException {
         log.info("Handling FILTER_PRODUCT_BY_ID request");
-        writer.println(JsonUtils.toJson(productService.findById(JsonUtils.fromJson(request.getBody(), Long.class))));
+        //writer.println(JsonUtils.toJson(productService.findById(JsonUtils.fromJson(request.getBody(), Long.class))));
+        writer.println(JsonUtils.toJson(productService.filterById(request)));
     }
 
     @Command(RequestType.FILTER_PRODUCT_BY_NAME)
     public void handleFilterByName(PrintWriter writer, Request request) throws JsonProcessingException {
         log.info("Handling FILTER_PRODUCT_BY_NAME request");
-        writer.println(JsonUtils.toJson(productService.findByName(request.getBody())));
+       // writer.println(JsonUtils.toJson(productService.findByName(request.getBody())));
+        writer.println(JsonUtils.toJson(productService.filterByName(request)));
     }
 
     @Command(RequestType.FILTER_PRODUCT_BY_CATEGORY)

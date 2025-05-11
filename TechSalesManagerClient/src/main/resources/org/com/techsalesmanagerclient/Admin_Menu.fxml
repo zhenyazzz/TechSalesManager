@@ -6,8 +6,9 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.layout.HBox?>
 
-<AnchorPane xmlns="http://javafx.com/javafx/23.0.1" 
-            xmlns:fx="http://javafx.com/fxml/1" 
+<?import javafx.geometry.Insets?>
+<AnchorPane xmlns="http://javafx.com/javafx/23.0.1"
+            xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="org.com.techsalesmanagerclient.controller.AdminMenuController"
             prefHeight="600.0" prefWidth="800.0"
             stylesheets="@styles/menu.css">
@@ -20,14 +21,14 @@
         
         <HBox alignment="CENTER_LEFT" spacing="20">
             <Label fx:id="title" text="Главная" />
-            <Label fx:id="loginLabel" text="Login" HBox.halignment="RIGHT" />
+            <Label fx:id="loginLabel" text="Login"/>
         </HBox>
         
         <VBox spacing="16" styleClass="container">
-            <Button fx:id="UserMenuWorkButton" onAction="#handleUserMenu" text="Работа с пользователями" />
-            <Button fx:id="ProductMenuWorkButton" onAction="#handleProductMenu" text="Работа с товарами" />
-            <Button fx:id="CatalogButton" onAction="#handleCatalog" text="Просмотреть каталог" />
-            <Button fx:id="ExitButton" onAction="#handleExit" text="Выход" />
+            <Button fx:id="UserMenuWorkButton"  text="Работа с пользователями" />
+            <Button fx:id="ProductMenuWorkButton"  text="Работа с товарами" />
+            <Button fx:id="CatalogButton"  text="Просмотреть каталог" />
+            <Button fx:id="ExitButton"  text="Выход" />
         </VBox>
     </VBox>
 </AnchorPane>

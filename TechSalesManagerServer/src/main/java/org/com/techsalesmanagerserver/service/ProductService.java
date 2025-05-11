@@ -152,4 +152,79 @@ public class ProductService {
                 .stock(productDTO.getStock())
                 .build();
     }
+
+    public Response filterById(Request request) throws JsonProcessingException {
+        log.info("Filtering products by ID range: {}", request.getBody());
+        try {
+            // Десериализация строки диапазона ID
+            String idRange = JsonUtils.fromJson(request.getBody(), String.class);
+            String[] range = idRange.split("-");
+            if (range.length != 2) {
+                log.error("Invalid ID range format: {}", idRange);
+                return new Response(ResponseStatus.ERROR, "Неверный формат диапазона ID: ожидается 'start-end'");
+            }
+
+            Long startId, endId;
+            try {
+                startId = Long.parseLong(range[0].trim());
+                endId = Long.parseLong(range[1].trim());
+            } catch (NumberFormatException e) {
+                log.error("Invalid number format in ID range: {}", idRange);
+                return new Response(ResponseStatus.ERROR, "Неверный формат чисел в диапазоне ID");
+            }
+
+            if (startId > endId) {
+                log.error("Start ID {} is greater than end ID {}", startId, endId);
+                return new Response(ResponseStatus.ERROR, "Начальный ID должен быть меньше или равен конечному");
+            }
+
+            List<Product> products = productRepository.findByIdBetween(startId, endId);
+            for (Product product : products) {
+                product.setOrderItems(null);
+                product.setSales(null);
+                product.setImages(null);
+                product.setSupplier(null);
+            }
+            if (!products.isEmpty()) {
+                log.info("Found {} products in ID range: {}", products.size(), idRange);
+                return new Response(ResponseStatus.Ok, JsonUtils.toJson(products));
+            } else {
+                log.warn("No products found in ID range: {}", idRange);
+                return new Response(ResponseStatus.ERROR, "Товары не найдены");
+            }
+        } catch (Exception e) {
+            log.error("Failed to filter by ID range: {}", request.getBody(), e);
+            return new Response(ResponseStatus.ERROR, "Ошибка при фильтрации по диапазону ID: " + e.getMessage());
+        }
+    }
+
+    public Response filterByName(Request request) throws JsonProcessingException {
+        log.info("Filtering products by name substring: {}", request.getBody());
+        try {
+            // Десериализация подстроки названия
+            String substring = JsonUtils.fromJson(request.getBody(), String.class);
+            if (substring == null || substring.trim().isEmpty()) {
+                log.error("Name substring is null or empty");
+                return findAll();
+            }
+
+            List<Product> products = productRepository.findByNameContainingIgnoreCase(substring.trim());
+            for (Product product : products) {
+                product.setOrderItems(null);
+                product.setSales(null);
+                product.setImages(null);
+                product.setSupplier(null);
+            }
+            if (!products.isEmpty()) {
+                log.info("Found {} products with name containing: {}", products.size(), substring);
+                return new Response(ResponseStatus.Ok, JsonUtils.toJson(products));
+            } else {
+                log.warn("No products found with name containing: {}", substring);
+                return new Response(ResponseStatus.ERROR, "Товары не найдены");
+            }
+        } catch (Exception e) {
+            log.error("Failed to filter by name substring: {}", request.getBody(), e);
+            return new Response(ResponseStatus.ERROR, "Ошибка при фильтрации по названию: " + e.getMessage());
+        }
+    }
 } 
