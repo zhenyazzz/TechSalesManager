@@ -30,7 +30,7 @@ public class UserWorkMenuController {
 
         // Выход из системы
         ExitButton.setOnAction(event -> {
-            workWithScenes.loadScene( "/org/com/techsalesmanagerclient/AdminMenu.fxml",ExitButton);
+            workWithScenes.loadScene( "/org/com/techsalesmanagerclient/Admin_Menu.fxml",ExitButton);
         });
     }
 }

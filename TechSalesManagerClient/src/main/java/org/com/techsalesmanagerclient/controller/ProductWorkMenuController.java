@@ -29,6 +29,6 @@ public class ProductWorkMenuController {
     }
 
     public void handleExit(ActionEvent actionEvent) {
-        workWithScenes.loadScene("/org/com/techsalesmanagerclient/logIn.fxml",ExitButton);
+        workWithScenes.loadScene("/org/com/techsalesmanagerclient/Admin_Menu.fxml",ExitButton);
     }
 }
