@@ -10,10 +10,11 @@ import lombok.*;
 @AllArgsConstructor
 public class ProductImage {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String imageName;
     private String imagePath;
-    @OneToOne(mappedBy = "productImage")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id")
     private Product product;
 }

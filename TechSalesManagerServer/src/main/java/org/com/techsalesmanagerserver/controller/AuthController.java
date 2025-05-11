@@ -3,10 +3,11 @@ package org.com.techsalesmanagerserver.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.com.techsalesmanagerserver.dto.Request;
+import org.com.techsalesmanagerserver.dto.Response;
 import org.com.techsalesmanagerserver.enumeration.RequestType;
 import org.com.techsalesmanagerserver.server.JsonUtils;
-import org.com.techsalesmanagerserver.server.Request;
-import org.com.techsalesmanagerserver.server.Response;
 import org.com.techsalesmanagerserver.service.UserService;
 import org.springframework.stereotype.Component;
 

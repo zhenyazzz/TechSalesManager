@@ -18,12 +18,14 @@ public class Sale {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    @ManyToOne
+    @JoinColumn(name = "product_id")
+    private Product product;
+
+    private String productName;
     private int quantity;
     private BigDecimal totalPrice;
     private LocalDateTime saleDate;
-
-    @ManyToOne
-    private Product product;
 
     @ManyToOne
     private User user;
