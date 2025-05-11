@@ -12,10 +12,12 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.com.techsalesmanagerclient.controller.UserCrudController">
+<BorderPane xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" 
+            fx:controller="org.com.techsalesmanagerclient.controller.UserCrudController"
+            stylesheets="@styles/user-crud.css">
 
     <top>
-        <Label text="Управление пользователями" BorderPane.alignment="CENTER">
+        <Label fx:id="title" text="Управление пользователями" BorderPane.alignment="CENTER">
             <font>
                 <Font size="20" />
             </font>
@@ -37,8 +39,7 @@
             <TextField fx:id="usernameField" promptText="Имя пользователя" />
             <TextField fx:id="emailField" promptText="Email" />
             <TextField fx:id="passwordField" promptText="Пароль" />
-            <ComboBox fx:id="roleComboBox">
-            </ComboBox>
+            <ComboBox fx:id="roleComboBox" promptText="Роль" />
         </VBox>
     </left>
 
@@ -49,7 +50,7 @@
             </padding>
 
             <HBox spacing="10">
-            <Button id="SearchButton" fx:id="SearchButton" onAction="#handleSearch" mnemonicParsing="false" text="Поиск" />
+                <Button fx:id="SearchButton" onAction="#handleSearch" text="Поиск" />
                 <Button fx:id="createButton" onAction="#handleCreate" text="Создать" />
                 <Button fx:id="updateButton" onAction="#handleUpdate" text="Обновить" />
                 <Button fx:id="deleteButton" onAction="#handleDelete" text="Удалить" />

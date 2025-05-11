@@ -1,24 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!--<?import com.gluonhq.charm.glisten.control.Avatar?>-->
-
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.text.Font?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="389.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.com.techsalesmanagerclient.controller.AdminMenuController">
-   <children>
-      <Button id="Catalog" fx:id="CatalogButton" layoutX="36.0" layoutY="216.0" mnemonicParsing="false" prefHeight="35.0" prefWidth="160.0" text="Просмотреть каталог" />
-      <Button id="ProductWorkMenu" fx:id="ProductMenuWorkButton" layoutX="36.0" layoutY="152.0" mnemonicParsing="false" prefHeight="35.0" prefWidth="160.0" text="Работа с товарами" />
-      <Button id="UserWorkMenu" fx:id="UserMenuWorkButton" layoutX="36.0" layoutY="84.0" mnemonicParsing="false" prefHeight="35.0" prefWidth="188.0" text="Работа с пользователями" />
-      <Button id="Exit" fx:id="ExitButton" layoutX="36.0" layoutY="317.0" mnemonicParsing="false" text="Выход" />
-<!--      <Avatar layoutX="370.0" layoutY="39.0" />-->
-      <Label layoutX="467.0" layoutY="30.0" prefHeight="18.0" prefWidth="91.0" text="Login" />
-      <Label layoutX="35.0" layoutY="25.0" prefHeight="45.0" prefWidth="135.0" text="Главная ">
-         <font>
-            <Font size="30.0" />
-         </font>
-      </Label>
-   </children>
+<AnchorPane xmlns="http://javafx.com/javafx/23.0.1" 
+            xmlns:fx="http://javafx.com/fxml/1" 
+            fx:controller="org.com.techsalesmanagerclient.controller.AdminMenuController"
+            prefHeight="600.0" prefWidth="800.0"
+            stylesheets="@styles/menu.css">
+    
+    <VBox spacing="20" AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0" 
+          AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
+        <padding>
+            <Insets top="20" right="20" bottom="20" left="20"/>
+        </padding>
+        
+        <HBox alignment="CENTER_LEFT" spacing="20">
+            <Label fx:id="title" text="Главная" />
+            <Label fx:id="loginLabel" text="Login" HBox.halignment="RIGHT" />
+        </HBox>
+        
+        <VBox spacing="16" styleClass="container">
+            <Button fx:id="UserMenuWorkButton" onAction="#handleUserMenu" text="Работа с пользователями" />
+            <Button fx:id="ProductMenuWorkButton" onAction="#handleProductMenu" text="Работа с товарами" />
+            <Button fx:id="CatalogButton" onAction="#handleCatalog" text="Просмотреть каталог" />
+            <Button fx:id="ExitButton" onAction="#handleExit" text="Выход" />
+        </VBox>
+    </VBox>
 </AnchorPane>

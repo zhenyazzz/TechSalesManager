@@ -86,6 +86,51 @@ public class ProductService {
         }
     }
 
+    public Response findByName(String name) {
+        try {
+            log.info("Finding product by name: {}", name);
+            return Response.builder()
+                    .status(ResponseStatus.Ok)
+                    .body(JsonUtils.toJson(productRepository.findByName(name)))
+                    .build();
+        } catch (Exception e) {
+            log.error("Error finding product by name: {}", e.getMessage());
+            return Response.builder()
+                    .status(ResponseStatus.ERROR)
+                    .build();
+        }
+    }
+
+    public Response findByCategory(Long categoryId) {
+        try {
+            log.info("Finding products by category: {}", categoryId);
+            return Response.builder()
+                    .status(ResponseStatus.Ok)
+                    .body(JsonUtils.toJson(productRepository.findByCategoryId(categoryId)))
+                    .build();
+        } catch (Exception e) {
+            log.error("Error finding products by category: {}", e.getMessage());
+            return Response.builder()
+                    .status(ResponseStatus.ERROR)
+                    .build();
+        }
+    }
+
+    public Response findBySupplier(Long supplierId) {
+        try {
+            log.info("Finding products by supplier: {}", supplierId);
+            return Response.builder()
+                    .status(ResponseStatus.Ok)
+                    .body(JsonUtils.toJson(productRepository.findBySupplierId(supplierId)))
+                    .build();
+        } catch (Exception e) {
+            log.error("Error finding products by supplier: {}", e.getMessage());
+            return Response.builder()
+                    .status(ResponseStatus.ERROR)
+                    .build();
+        }
+    }
+
     private ProductDTO convertToDTO(Product product) {
         return ProductDTO.builder()
                 .id(product.getId())

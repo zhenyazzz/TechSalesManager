@@ -12,10 +12,12 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.com.techsalesmanagerclient.controller.ProductCrudController">
+<BorderPane xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" 
+            fx:controller="org.com.techsalesmanagerclient.controller.ProductCrudController"
+            stylesheets="@styles/product-crud.css">
 
     <top>
-        <Label text="Управление товарами" BorderPane.alignment="CENTER">
+        <Label fx:id="title" text="Управление товарами" BorderPane.alignment="CENTER">
             <font>
                 <Font size="20" />
             </font>

@@ -144,23 +144,28 @@ public class ProductCrudController {
 
             if (response.getStatus() == ResponseStatus.Ok) {
                 Platform.runLater(() -> {
-                    products.clear();
-                    Map<String, Object> rawProduct = JsonUtils.fromJson(response.getBody(), Map.class);
-                    Category category = new Category();
-                    Map<String, Object> rawCategory = (Map<String, Object>) rawProduct.get("category");
-                    if (rawCategory != null) {
-                        category.setId(((Number) rawCategory.get("id")).longValue());
-                        category.setName((String) rawCategory.get("name"));
+                    try {
+                        products.clear();
+                        Map<String, Object> rawProduct = JsonUtils.fromJson(response.getBody(), Map.class);
+                        Category category = new Category();
+                        Map<String, Object> rawCategory = (Map<String, Object>) rawProduct.get("category");
+                        if (rawCategory != null) {
+                            category.setId(((Number) rawCategory.get("id")).longValue());
+                            category.setName((String) rawCategory.get("name"));
+                        }
+                        products.add(new POJO_Product(
+                                ((Number) rawProduct.get("id")).longValue(),
+                                (String) rawProduct.get("name"),
+                                (String) rawProduct.get("description"),
+                                ((Number) rawProduct.get("price")).doubleValue(),
+                                ((Number) rawProduct.get("stock")).intValue(),
+                                category
+                        ));
+                        productTable.setItems(products);
+                    } catch (JsonProcessingException e) {
+                        log.error("Failed to parse product data", e);
+                        showAlert("Error", "Ошибка при обработке данных товара: " + e.getMessage());
                     }
-                    products.add(new POJO_Product(
-                            ((Number) rawProduct.get("id")).longValue(),
-                            (String) rawProduct.get("name"),
-                            (String) rawProduct.get("description"),
-                            ((Number) rawProduct.get("price")).doubleValue(),
-                            ((Number) rawProduct.get("stock")).intValue(),
-                            category
-                    ));
-                    productTable.setItems(products);
                 });
             } else {
                 Platform.runLater(() -> showAlert("Error", "Товар не найден: " + response.getBody()));
@@ -210,21 +215,19 @@ public class ProductCrudController {
             data.put("description", description);
             data.put("price", price);
             data.put("stock", stock);
-            data.put("category", Map.of("id", category.getId(), "name", category.getName()));
+            data.put("categoryId", category.getId());
 
             Request request = new Request(RequestType.CREATE_PRODUCT, JsonUtils.toJson(data));
             Response response = Client.send(request);
             log.info("Create response: {}", response);
 
             if (response.getStatus() == ResponseStatus.Ok) {
-                Platform.runLater(() -> {
-                    clearInputFields();
-                    try {
+                /*try {
                         handleSearch(event); // Обновляем таблицу
                     } catch (Exception e) {
                         log.error("Failed to refresh table after create", e);
-                    }
-                });
+                    }*/
+                Platform.runLater(this::clearInputFields);
             } else {
                 Platform.runLater(() -> showAlert("Error", "Не удалось создать товар: " + response.getBody()));
             }
@@ -232,6 +235,7 @@ public class ProductCrudController {
             log.error("Failed to create product", e);
             Platform.runLater(() -> showAlert("Error", "Ошибка при создании товара: " + e.getMessage()));
         }
+        workWithScenes.loadScene("/org/com/techsalesmanagerclient/Product_CRUD.fxml",createButton);
     }
 
     @FXML
@@ -294,7 +298,7 @@ public class ProductCrudController {
             data.put("description", description);
             data.put("price", price);
             data.put("stock", stock);
-            data.put("category", Map.of("id", category.getId(), "name", category.getName()));
+            data.put("categoryId", category.getId());
 
             Request request = new Request(RequestType.UPDATE_PRODUCT, JsonUtils.toJson(data));
             Response response = Client.send(request);
@@ -303,11 +307,11 @@ public class ProductCrudController {
             if (response.getStatus() == ResponseStatus.Ok) {
                 Platform.runLater(() -> {
                     clearInputFields();
-                    try {
+                   /* try {
                         handleSearch(event); // Обновляем таблицу
                     } catch (Exception e) {
                         log.error("Failed to refresh table after update", e);
-                    }
+                    }*/
                 });
             } else {
                 Platform.runLater(() -> showAlert("Error", "Не удалось обновить товар: " + response.getBody()));
@@ -316,6 +320,7 @@ public class ProductCrudController {
             log.error("Failed to update product", e);
             Platform.runLater(() -> showAlert("Error", "Ошибка при обновлении товара: " + e.getMessage()));
         }
+        workWithScenes.loadScene("/org/com/techsalesmanagerclient/Product_CRUD.fxml",createButton);
     }
 
     @FXML
@@ -350,11 +355,11 @@ public class ProductCrudController {
                     products.removeIf(product -> product.getId() != null && product.getId().equals(id));
                     productTable.setItems(FXCollections.observableArrayList(products));
                     clearInputFields();
-                    try {
+                    /*try {
                         handleSearch(event); // Обновляем таблицу
                     } catch (Exception e) {
                         log.error("Failed to refresh table after delete", e);
-                    }
+                    }*/
                 });
             } else {
                 Platform.runLater(() -> showAlert("Error", "Не удалось удалить товар: " + response.getBody()));

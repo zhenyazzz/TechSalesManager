@@ -87,6 +87,21 @@ public class OrderItemService {
         }
     }
 
+    public Response findByOrder(Long orderId) {
+        try {
+            log.info("Finding order items by order: {}", orderId);
+            return Response.builder()
+                    .status(ResponseStatus.Ok)
+                    .body(JsonUtils.toJson(orderItemRepository.findByOrderId(orderId).stream().map(this::convertToDTO).collect(Collectors.toList())))
+                    .build();
+        } catch (Exception e) {
+            log.error("Error finding order items by order: {}", e.getMessage());
+            return Response.builder()
+                    .status(ResponseStatus.ERROR)
+                    .build();
+        }
+    }
+
     private OrderItemDTO convertToDTO(OrderItem orderItem) {
         return OrderItemDTO.builder()
                 .id(orderItem.getId())
@@ -105,4 +120,8 @@ public class OrderItemService {
                 .price(BigDecimal.valueOf(orderItemDTO.getPrice()))
                 .build();
     }
-} 
+
+    public Object findByProduct(Long aLong) {
+        return null;
+    }
+}

@@ -99,4 +99,19 @@ public class CategoryService {
                 .name(categoryDTO.getName())
                 .build();
     }
-} 
+
+    public Response findByName(String name) {
+        try {
+            log.info("Finding category by name: {}", name);
+            return Response.builder()
+                    .status(ResponseStatus.Ok)
+                    .body(JsonUtils.toJson(categoryRepository.findByName(name)))
+                    .build();
+        } catch (Exception e) {
+            log.error("Error finding category by name: {}", e.getMessage());
+            return Response.builder()
+                    .status(ResponseStatus.ERROR)
+                    .build();
+        }
+    }
+}

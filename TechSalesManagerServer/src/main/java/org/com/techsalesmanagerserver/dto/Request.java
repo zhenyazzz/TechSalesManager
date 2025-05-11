@@ -14,5 +14,4 @@ public class Request implements Serializable{
 
     private RequestType type;
     private String body;
-    private String token;
 }

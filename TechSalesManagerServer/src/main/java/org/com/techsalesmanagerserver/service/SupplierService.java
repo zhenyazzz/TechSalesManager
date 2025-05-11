@@ -172,6 +172,36 @@ public class SupplierService {
         return new Response(ResponseStatus.Ok, JsonUtils.toJson(productDTOs));
     }
 
+    public Response findByName(String name) {
+        try {
+            log.info("Finding supplier by name: {}", name);
+            return Response.builder()
+                    .status(ResponseStatus.Ok)
+                    .body(JsonUtils.toJson(supplierRepository.findByName(name)))
+                    .build();
+        } catch (Exception e) {
+            log.error("Error finding supplier by name: {}", e.getMessage());
+            return Response.builder()
+                    .status(ResponseStatus.ERROR)
+                    .build();
+        }
+    }
+
+    public Response findByProduct(Long productId) {
+        try {
+            log.info("Finding supplier by product: {}", productId);
+            return Response.builder()
+                    .status(ResponseStatus.Ok)
+                    .body(JsonUtils.toJson(supplierRepository.findByProductsId(productId)))
+                    .build();
+        } catch (Exception e) {
+            log.error("Error finding supplier by product: {}", e.getMessage());
+            return Response.builder()
+                    .status(ResponseStatus.ERROR)
+                    .build();
+        }
+    }
+
     private SupplierDTO convertToDTO(Supplier supplier) {
         return SupplierDTO.builder()
                 .id(supplier.getId())

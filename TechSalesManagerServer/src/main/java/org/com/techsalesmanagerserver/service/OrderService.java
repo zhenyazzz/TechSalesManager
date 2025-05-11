@@ -14,6 +14,7 @@ import org.com.techsalesmanagerserver.server.JsonUtils;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -88,6 +89,54 @@ public class OrderService {
             return new Response(ResponseStatus.ERROR, "Заказ не найден");
         }
     }
+
+    public Response findByUser(Long userId) {
+        try {
+            log.info("Finding orders by user: {}", userId);
+            return Response.builder()
+                    .status(ResponseStatus.Ok)
+                    .body(JsonUtils.toJson(orderRepository.findByUserId(userId)))
+                    .build();
+        } catch (Exception e) {
+            log.error("Error finding orders by user: {}", e.getMessage());
+            return Response.builder()
+                    .status(ResponseStatus.ERROR)
+                    .build();
+        }
+    }
+
+    public Response findByStatus(String status) {
+        try {
+            log.info("Finding orders by status: {}", status);
+            return Response.builder()
+                    .status(ResponseStatus.Ok)
+                    .body(JsonUtils.toJson(orderRepository.findByStatus(OrderStatus.valueOf(status))))
+                    .build();
+        } catch (Exception e) {
+            log.error("Error finding orders by status: {}", e.getMessage());
+            return Response.builder()
+                    .status(ResponseStatus.ERROR)
+                    .build();
+        }
+    }
+
+    /*public Response findByDateRange(String dateRange) {
+        try {
+            log.info("Finding orders by date range: {}", dateRange);
+            String[] dates = dateRange.split(",");
+            LocalDateTime startDate = LocalDateTime.parse(dates[0]);
+            LocalDateTime endDate = LocalDateTime.parse(dates[1]);
+            return Response.builder()
+                    .status(ResponseStatus.Ok)
+                    .body(JsonUtils.toJson(orderRepository.findByCreatedAtBetween(startDate, endDate)))
+                    .build();
+        } catch (Exception e) {
+            log.error("Error finding orders by date range: {}", e.getMessage());
+            return Response.builder()
+                    .status(ResponseStatus.ERROR)
+                    .build();
+        }
+    }*/
 
     private OrderDTO convertToDTO(Order order) {
         return OrderDTO.builder()
