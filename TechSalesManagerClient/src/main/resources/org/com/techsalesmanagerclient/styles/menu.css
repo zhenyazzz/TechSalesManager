@@ -1,3 +1,4 @@
+/*
 .root {
     -fx-background-color: #fafafa;
     -fx-font-family: 'Roboto', 'Segoe UI', Arial, sans-serif;
@@ -78,7 +79,7 @@
     -fx-background-color: #d32f2f;
 }
 
-/* Стили для контейнеров */
+!* Стили для контейнеров *!
 .container {
     -fx-background-color: white;
     -fx-background-radius: 4px;
@@ -88,8 +89,8 @@
     -fx-effect: none;
 }
 
-/* Стили для разделителей */
+!* Стили для разделителей *!
 .separator {
     -fx-background-color: #e0e0e0;
     -fx-padding: 0;
-} 
+} */

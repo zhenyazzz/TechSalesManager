@@ -20,8 +20,8 @@ module org.com.techsalesmanagerclient {
     requires io.netty.handler;
     requires org.slf4j;
     requires annotations;
-    requires java.desktop;
     requires java.sql;
+    requires javafx.swing;
 
     opens org.com.techsalesmanagerclient.model to com.fasterxml.jackson.databind;
     opens org.com.techsalesmanagerclient to javafx.fxml;
@@ -34,5 +34,7 @@ module org.com.techsalesmanagerclient {
     exports org.com.techsalesmanagerclient.enums;
     opens org.com.techsalesmanagerclient.enums to javafx.fxml;
     exports org.com.techsalesmanagerclient.model to com.fasterxml.jackson.databind;
+    exports org.com.techsalesmanagerclient.service to com.fasterxml.jackson.databind;
+    opens org.com.techsalesmanagerclient.service to com.fasterxml.jackson.databind;
 
 }
